@@ -1,0 +1,26 @@
+agiato is a simple no frill Cassandra NOSQL database API. My goal has been to make sure that
+it does not take someone more than hour to learn the API and start using it.
+
+It DOES thew following
+
+- Supports Cassandra version .7x
+- Simple wrapper around thrift API
+- API does not support different data types. 
+- An Util class is provided for conversion between ByteBuffer and basic data types
+- API only understands ByteBuffer
+- The api is defined in one class
+- There is database connection pooling using appached common pool library
+- There is simple round robin load balancer.
+- User defined load balancer can be plugged in
+- There is JSON file that defined cluster, connection configuration and key space definition
+- The API load the JSON on start up and creates the key space if necessary
+
+It DOES NO DO the following
+
+- Object mapping
+- Data types
+
+It WILL DO the following in future
+
+- Support named query and index defined in the JSON file
+
