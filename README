@@ -10,10 +10,10 @@ It DOES the following
 - An Util class is provided for conversion between ByteBuffer and basic data types, which the client app may use
 - API only understands ByteBuffer
 - The whole API is defined in one class
-- There is database connection pooling using appached common pool library
+- There is database connection pooling using appache commons pool library
 - There is a simple round robin load balancer, out of the box.
 - User defined load balancer can be plugged in
-- There is JSON file that defined cluster, connection configuration and key space definition
+- There is JSON file that defines cluster, connection configuration and key space definition
 - The API loads the JSON on start up and creates the key space if necessary
 - The client app needs to make sure cassandra.json file is placed in the class path
 
@@ -78,4 +78,46 @@ path.
 		]
 	}
 }
+
+Example client code
+-------------------
+
+//when your app starts
+DataManager.initialize(false);
+
+//insert a super column into MonitorData column family
+DataAccess dataAccess = new DataAccess();
+List<SuperColumnValue> superColValues = new ArrayList<SuperColumnValue>();
+
+long rowKey = ...
+long superColName = ...
+List<ColumnValue> colValues = new ArrayList<ColumnValue>();
+ColumnValue colVal = new ColumnValue();
+colVal.write("ecg", getEcg());
+colValues.add(colVal);
+
+colVal = new ColumnValue();
+colVal.write("diaBp", getDiaBp());
+colValues.add(colVal);
+
+colVal = new ColumnValue();
+colVal.write("sysBp", getSysBp());
+colValues.add(colVal);
+
+colVal = new ColumnValue();
+colVal.write("temp", getTemp());
+colValues.add(colVal);
+
+colVal = new ColumnValue();
+colVal.write("pulse", getPulse());
+colValues.add(colVal);
+
+SuperColumnValue superColVal = new SuperColumnValue();
+superColVal.setNameFromLong(superColName);
+superColVal.setValues(colValues);
+superColValues.add(superColVal);
+
+dataAccess.insertSuperColumns("MonitorData", rowKey, superColValues, ConsistencyLevel.ALL);
+
+
 

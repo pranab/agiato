@@ -146,6 +146,5 @@ public class DataManager {
     public GenericObjectPool getConnectionPool(){
         return loadBalancer.select().getConnectionPool();
     }
-
     
 }
