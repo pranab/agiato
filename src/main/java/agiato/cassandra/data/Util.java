@@ -129,5 +129,10 @@ public class Util {
         }
         return columns;
     }
+    
+    public static ByteBuffer getEmptyByteBuffer(){
+        byte[] data = {};
+        return ByteBuffer.wrap(data);
+    }
 
 }
