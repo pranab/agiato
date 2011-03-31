@@ -87,5 +87,17 @@ public class KeySpaceDef {
     public void setColumnFamilies(List<ColumnFamilyDef> columnFamilies) {
         this.columnFamilies = columnFamilies;
     }
+    
+    public ColumnFamilyDef findColFamilyByName(String colFam){
+        ColumnFamilyDef colFamDef = null;
+        for (ColumnFamilyDef thisColFamDef : columnFamilies){
+            if (thisColFamDef.getName().equals(colFam)){
+                colFamDef = thisColFamDef;
+                break;
+            }
+        }
+        
+        return colFamDef;
+    }
 
 }

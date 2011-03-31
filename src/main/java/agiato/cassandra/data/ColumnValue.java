@@ -14,7 +14,7 @@ import java.nio.ByteBuffer;
  * @author pranab
  */
 public class ColumnValue  extends BaseColumnValue{
-     private ByteBuffer value;
+     private ByteBuffer value = Util.getEmptyByteBuffer();
 
     public void write(String name, String value) throws IOException{
         this.name = Util.getByteBufferFromString(name) ;

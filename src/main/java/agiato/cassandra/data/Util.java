@@ -149,6 +149,7 @@ public class Util {
             if (null != value)
                 values.add(value);
         }
+        dis.close();
         return values;
     }
     

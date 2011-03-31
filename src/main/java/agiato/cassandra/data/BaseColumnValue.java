@@ -13,7 +13,7 @@ import java.nio.ByteBuffer;
  * @author pranab
  */
 public class BaseColumnValue {
-     protected ByteBuffer name;
+     protected ByteBuffer name = Util.getEmptyByteBuffer();;
 
     /**
      * @return the name

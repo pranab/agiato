@@ -407,6 +407,9 @@ public class DataAccess {
         updateSuperColumns(rowKey, superColVals, consLevel);
     }
 
+    /*
+     * Retirieves all columns from standard CF 
+     */
     public  List<ColumnValue>  retrieveColumns(String rowKey, ConsistencyLevel consLevel)
         throws Exception {
         Connector connector = dataManager.borrowConnection();
@@ -426,6 +429,9 @@ public class DataAccess {
         return colValues;
      }
 
+    /*
+     * Queries all rows from standard CF 
+     */
     public  List<SimpleRow>  queryColumns(ByteBuffer column, IndexOperator operator, 
             ByteBuffer colValue, ConsistencyLevel consLevel)
         throws Exception {
@@ -467,26 +473,43 @@ public class DataAccess {
     }
     
 
+    /*
+     * Inserts columnn values in standard CF 
+     */
     public  void insertColumns(String rowKey, List<ColumnValue> colVals, ConsistencyLevel consLevel)
         throws Exception {
-        updateColumns(rowKey, colVals, consLevel);    
+        updateColumns(rowKey, colVals, consLevel);   
+        IndexManager.instance().createIndex(colFamilly, Util.getByteBufferFromString(rowKey), colVals);
     }
 
+    /*
+     * Inserts columnn values in standard CF 
+     */
     public  void insertColumns(long rowKey, List<ColumnValue> colVals, ConsistencyLevel consLevel)
         throws Exception {
         updateColumns(rowKey, colVals, consLevel);    
+        IndexManager.instance().createIndex(colFamilly, Util.getByteBufferFromLong(rowKey), colVals);
     }
 
+    /*
+     * Updates columnn values in standard CF 
+     */
     public   void  updateColumns(String rowKey, List<ColumnValue> colVals, ConsistencyLevel consLevel)
          throws Exception{
         updateColumns(Util.getByteBufferFromString(rowKey), colVals, consLevel);
     }
     
+    /*
+     * Updates columnn values in standard CF 
+     */
     public   void  updateColumns(long rowKey, List<ColumnValue> colVals, ConsistencyLevel consLevel)
         throws Exception{
         updateColumns(Util.getByteBufferFromLong(rowKey), colVals, consLevel);
     }
     
+    /*
+     * Updates columnn values in standard CF 
+     */
     public   void  updateColumns(ByteBuffer rowKey, List<ColumnValue> colVals, ConsistencyLevel consLevel)
          throws Exception{
         Connector connector = dataManager.borrowConnection();

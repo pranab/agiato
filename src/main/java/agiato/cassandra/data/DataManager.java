@@ -11,9 +11,12 @@ import agiato.cassandra.connect.LoadBalancer;
 import agiato.cassandra.meta.Cluster;
 import agiato.cassandra.meta.ColumnFamilyDef;
 import agiato.cassandra.meta.Host;
+import agiato.cassandra.meta.IndexDef;
 import agiato.cassandra.meta.MetaDataManager;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import org.apache.cassandra.thrift.Cassandra;
 import org.apache.cassandra.thrift.CfDef;
 import org.apache.cassandra.thrift.KsDef;
@@ -112,6 +115,42 @@ public class DataManager {
             } else {
                 System.out.println("keyspace already exists : " + keySpaceName);
             }
+            
+            //create cf for indexes
+            KsDef ksDef = client.describe_keyspace(keySpaceName);
+            Set<String> colFamSet = new HashSet<String>();
+            for (IndexDef indexDef : metaDatamanager.getIndexes()){
+                String cfName = indexDef.getColFamilyName();
+                List<CfDef> cfDefs = ksDef.getCf_defs();
+                boolean cfExists = false;
+
+                for (CfDef cfDef : cfDefs){
+                    if (cfDef.getName().equals(cfName)) {
+                        cfExists = true;
+                        break;
+                    }
+                }
+
+                String colFamName = indexDef.getColFamilyName();
+                if (!cfExists && !colFamSet.contains(colFamName)){
+                    CfDef cfDef = new CfDef();
+                    cfDef.setKeyspace(keySpaceName);
+                    cfDef.setName(colFamName);
+                    boolean isSuperCol = indexDef.isCatIndexName();
+                    cfDef.setColumn_type(isSuperCol? "Super" : "Standard");
+                    cfDef.setComparator_type(indexDef.getIndexedDataType() == IndexDef.TYPE_STRING? "UTF8Type" : "LongType");
+                    if (isSuperCol){
+                        cfDef.setSubcomparator_type(indexDef.getStoredDataType() == IndexDef.TYPE_STRING? "UTF8Type" : "LongType");
+                    }
+                    cfDef.setKey_cache_size(indexDef.getIndexKeysCached());
+                    cfDef.setRow_cache_size(indexDef.getIndexRowsCached());
+                    
+                    client.system_add_column_family(cfDef);
+                    colFamSet.add(colFamName);
+
+                }
+            }
+            
             
             //asociate key space 
             loadBalancer.associateKeySpace(keySpaceName);
