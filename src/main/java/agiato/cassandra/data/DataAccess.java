@@ -1,6 +1,18 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Agiato: A simple no frill Cassandra API
+ * Author: Pranab Ghosh
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you
+ * may not use this file except in compliance with the License. You may
+ * obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0 
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+ * implied. See the License for the specific language governing
+ * permissions and limitations under the License.
  */
 
 package agiato.cassandra.data;
@@ -430,7 +442,7 @@ public class DataAccess {
      }
 
     /*
-     * Queries all rows from standard CF 
+     * Queries all rows from standard CF using native index
      */
     public  List<SimpleRow>  queryColumns(ByteBuffer column, IndexOperator operator, 
             ByteBuffer colValue, ConsistencyLevel consLevel)
@@ -472,6 +484,15 @@ public class DataAccess {
         return rows;
     }
     
+    /*
+     * Queries all rows from standard CF using agiato index
+     */
+    public  List<SimpleRow> queryColumns(String query, List<Object> args, ConsistencyLevel consLevel)
+        throws Exception {
+        List<SimpleRow> rows = null;
+             
+        return rows;
+     }    
 
     /*
      * Inserts columnn values in standard CF 
