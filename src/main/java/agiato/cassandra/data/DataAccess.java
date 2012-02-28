@@ -121,8 +121,8 @@ public class DataAccess {
             colVal = new ColumnValue();
             Column col = result.getColumn();
             if (null != col){
-                colVal.setName(col.BufferForName());
-                colVal.setValue(col.BufferForValue());
+                colVal.setName(col.bufferForName());
+                colVal.setValue(col.bufferForValue());
             }
 
         } finally {
@@ -208,8 +208,8 @@ public class DataAccess {
                 Column col = colSup.getColumn();
                 if (null != col){
                     ColumnValue colVal = new ColumnValue();
-                    colVal.setName(col.BufferForName());
-                    colVal.setValue(col.BufferForValue());
+                    colVal.setName(col.bufferForName());
+                    colVal.setValue(col.bufferForValue());
                     colVals.add(colVal);
                 }
             }
@@ -250,8 +250,8 @@ public class DataAccess {
                 Column col = colSup.getColumn();
                 if (null != col){
                     ColumnValue colVal = new ColumnValue();
-                    colVal.setName(col.BufferForName());
-                    colVal.setValue(col.BufferForValue());
+                    colVal.setName(col.bufferForName());
+                    colVal.setValue(col.bufferForValue());
                     colValues.add(colVal);
                 }
             }
@@ -310,12 +310,12 @@ public class DataAccess {
                 SuperColumn superCol = colSup.getSuper_column();
                 if (null != superCol){
                     SuperColumnValue superColVal = new SuperColumnValue();
-                    superColVal.setName(superCol.BufferForName());
+                    superColVal.setName(superCol.bufferForName());
                     List<ColumnValue> colValues = new ArrayList<ColumnValue>();
                     for (Column col : superCol.getColumns()) {
                         ColumnValue colVal = new ColumnValue();
-                        colVal.setName(col.BufferForName());
-                        colVal.setValue(col.BufferForValue());
+                        colVal.setName(col.bufferForName());
+                        colVal.setValue(col.bufferForValue());
                         colValues.add(colVal);
                     }
                     superColVal.setValues(colValues);
@@ -368,9 +368,13 @@ public class DataAccess {
 
                 List<Column> columns = new ArrayList<Column>();
                 for (ColumnValue colVal : cols){
-                    columns.add(new Column(colVal.getName(), colVal.getValue(), timestamp));
+                    Column col = new Column(colVal.getName());
+                    col.setValue(colVal.getValue());
+                    col.setTimestamp(timestamp);  
+                    columns.add(col);
                 }
 
+                
                 SuperColumn superColumn = new SuperColumn(superCol, columns);
                 ColumnOrSuperColumn columnOrSuperColumn = new ColumnOrSuperColumn();
                 columnOrSuperColumn.setSuper_column(superColumn);
@@ -469,7 +473,7 @@ public class DataAccess {
 
             for (KeySlice ks : keys){
                 SimpleRow row = new SimpleRow();
-                ByteBuffer key = ks.BufferForKey();
+                ByteBuffer key = ks.bufferForKey();
                 List<ColumnOrSuperColumn> colSuperCols = ks.getColumns();
 
                 List<ColumnValue> colValues = getColumns(colSuperCols);
@@ -490,7 +494,8 @@ public class DataAccess {
     public  List<SimpleRow> queryColumns(String query, List<Object> args, ConsistencyLevel consLevel)
         throws Exception {
         List<SimpleRow> rows = null;
-             
+         //TODO
+        
         return rows;
      }    
 
@@ -544,7 +549,10 @@ public class DataAccess {
 
             List<Column> columns = new ArrayList<Column>();
             for (ColumnValue colVal : colVals){
-                Column col = new Column(colVal.getName(), colVal.getValue(), timestamp);
+                Column col = new Column(colVal.getName());
+                col.setValue(colVal.getValue());
+                col.setTimestamp(timestamp);
+                
                 ColumnOrSuperColumn columnOrSuperColumn = new ColumnOrSuperColumn();
                 columnOrSuperColumn.setColumn(col);
                 Mutation mutation = new Mutation();
@@ -569,8 +577,8 @@ public class DataAccess {
             Column col = colSup.getColumn();
             if (null != col){
                 ColumnValue colVal = new ColumnValue();
-                colVal.setName(col.BufferForName());
-                colVal.setValue(col.BufferForValue());
+                colVal.setName(col.bufferForName());
+                colVal.setValue(col.bufferForValue());
                 colValues.add(colVal);
             }
         }
