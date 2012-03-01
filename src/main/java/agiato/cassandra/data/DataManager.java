@@ -43,9 +43,9 @@ public class DataManager {
     private LoadBalancer loadBalancer;
     private static DataManager dataManager;
     
-    public static synchronized DataManager initialize(boolean forceCreateKeySpace) throws Exception{
+    public static synchronized DataManager initialize(String configFile, boolean forceCreateKeySpace) throws Exception{
         if (null == dataManager){
-            dataManager = new DataManager(forceCreateKeySpace);
+            dataManager = new DataManager(configFile, forceCreateKeySpace);
         }
         return dataManager;
     }
@@ -55,8 +55,8 @@ public class DataManager {
         return dataManager;
     }
             
-    public DataManager(boolean forceCreateKeySpace) throws Exception{
-        MetaDataManager.initialize();
+    public DataManager(String configFile, boolean forceCreateKeySpace) throws Exception{
+        MetaDataManager.initialize(configFile);
         MetaDataManager metaDatamanager = MetaDataManager.instance();
         Cluster cluster = metaDatamanager.getCluster();
 

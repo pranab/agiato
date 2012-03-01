@@ -17,10 +17,14 @@
 
 package agiato.cassandra.meta;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+
+
 import org.codehaus.jackson.map.ObjectMapper;
 
 /**
@@ -39,9 +43,14 @@ public class MetaDataManager {
         return metaDataManager;
     }
     
-    public static void initialize() throws IOException{
+    public static void initialize(String configFile) throws IOException{
         ObjectMapper mapper = new ObjectMapper(); 
-        InputStream in = MetaDataManager.class.getClassLoader().getResourceAsStream("cassandra.json");
+        InputStream in = null;
+        if (null == configFile){
+        	in = MetaDataManager.class.getClassLoader().getResourceAsStream("cassandra.json");
+        } else {
+        	in = new FileInputStream(new File(configFile));
+        }
         metaDataManager = mapper.readValue(in, MetaDataManager.class);
     }
 
