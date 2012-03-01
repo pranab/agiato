@@ -1,0 +1,58 @@
+{
+    "cluster" :
+	{
+		"hosts" :
+		[
+			{
+				"name" : "localhost",
+				"port" : 9160
+			}
+		],
+		"loadBalancerClass" : "agiato.cassandra.connect.RoundRobinLoadBalancer",
+		"poolConfig" : 
+		{
+			"maxActive" : 8,
+			"maxIdle" : 8
+		}
+	},
+	"keySpace" :
+	{
+		"name" : "PatientMonitor",
+		"replicaPlacementStrategy" : "org.apache.cassandra.locator.SimpleStrategy",
+		"replicationFactor" : 1,
+		"endPointSnitch" : "org.apache.cassandra.locator.EndPointSnitch",
+		"columnFamilies" : 
+		[
+			{
+				"name" : "MonitorData",
+				"columnType" : "Standard",
+				"compareWith" : "UTF8Type",
+				"keysCached" : 1000,
+				"rowsCached" : 10
+			},
+			{
+				"name" : "Patient",
+				"columnType" : "Standard",
+				"compareWith" : "UTF8Type",
+				"keysCached" : 100,
+				"rowsCached" : 10
+			}
+
+		],
+		"indexes" :
+	 	[
+			{
+				"name" : "monitorDataByPatientID",
+				"colFamily" : "MonitorData",
+				"type" : "1.1.1.2",
+				"indexedColumnName" : "patientID",
+				"indexedDataType" : 1,
+				"storedDataType" : 2,
+				"indexKeysCached" : 10,
+				"indexRowsCached" : 5
+			}
+		]
+
+	}
+}
+
