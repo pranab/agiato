@@ -17,6 +17,7 @@
 
 package agiato.cassandra.data;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,6 +28,15 @@ import java.util.List;
 public class SuperRow extends BaseRow {
     private List<SuperColumnValue> superColValues = new ArrayList<SuperColumnValue>();
 
+    public SuperRow() {
+    	super();
+    }
+    
+    public SuperRow(ByteBuffer key,  List<SuperColumnValue> superColValues) {
+    	super(key);
+    	this.superColValues = superColValues;
+    }
+    
     /**
      * @return the superColValues
      */

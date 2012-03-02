@@ -424,6 +424,68 @@ public class DataAccess {
     }
 
     /*
+     * Batch updates multiple super column rows  
+     */
+    public  void  batchUpdateSuperColumns(List<SuperRow> superRows, ConsistencyLevel consLevel)
+        throws Exception{
+        Connector connector = dataManager.borrowConnection();
+        Cassandra.Client client = connector.openConnection();
+
+        try{
+            long timestamp = System.currentTimeMillis();
+            Map<ByteBuffer, Map<String, List<Mutation>>> job = new HashMap<ByteBuffer, Map<String, List<Mutation>>>();
+	    	for (SuperRow superRow : superRows) {
+	    		 Map<String, List<Mutation>> mutations = getMutations(superRow.getSuperColValues(),  timestamp);
+	             job.put(superRow.getKey(), mutations);
+	    	}	
+            client.batch_mutate(job, consLevel);
+	    } finally {
+	             dataManager.returnConnection(connector);
+	     }    	
+    }
+    
+    /*
+     * Batch updates multiple super column rows  
+     */
+    public  void  batchInsertSuperColumns(List<SuperRow> superRows,
+        ConsistencyLevel consLevel)
+        throws Exception{
+    	batchUpdateSuperColumns(superRows, consLevel);
+    }
+    
+    private Map<String, List<Mutation>> getMutations(List<SuperColumnValue> superColVals, long timestamp) {
+        List<Mutation> mutations = new ArrayList<Mutation>();
+
+        for (SuperColumnValue superColVal : superColVals ){
+            ByteBuffer superCol =  superColVal.getName();
+            List<ColumnValue>  cols = superColVal.getValues();
+
+            List<Column> columns = new ArrayList<Column>();
+            for (ColumnValue colVal : cols){
+                Column col = new Column(colVal.getName());
+                col.setValue(colVal.getValue());
+                col.setTimestamp(timestamp);  
+                columns.add(col);
+            }
+
+            
+            SuperColumn superColumn = new SuperColumn(superCol, columns);
+            ColumnOrSuperColumn columnOrSuperColumn = new ColumnOrSuperColumn();
+            columnOrSuperColumn.setSuper_column(superColumn);
+
+            Mutation mutation = new Mutation();
+            mutation.setColumn_or_supercolumn(columnOrSuperColumn);
+            mutations.add(mutation);
+        }
+
+
+        Map<String, List<Mutation>> mutationsForColumnFamily = new HashMap<String, List<Mutation>>();
+        mutationsForColumnFamily.put(colFamilly, mutations);
+    	return mutationsForColumnFamily;
+    }
+    
+    
+    /*
      * Retirieves all columns from standard CF 
      */
     public  List<ColumnValue>  retrieveColumns(String rowKey, ConsistencyLevel consLevel)

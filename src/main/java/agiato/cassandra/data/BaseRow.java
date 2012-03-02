@@ -25,8 +25,16 @@ import java.nio.ByteBuffer;
  * @author pranab
  */
 public class BaseRow {
-    private ByteBuffer key;
 
+	private ByteBuffer key;
+
+	public BaseRow() {
+	}
+	
+    public BaseRow(ByteBuffer key) {
+		this.key = key;
+	}
+    
     /**
      * @return the key
      */

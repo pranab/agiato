@@ -17,6 +17,7 @@
 
 package agiato.cassandra.data;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,6 +28,14 @@ import java.util.List;
 public class SimpleRow extends BaseRow {
     private List<ColumnValue> colValues = new ArrayList<ColumnValue>();
     
+    public SimpleRow() {
+    	super();
+    }
+    
+    public SimpleRow(ByteBuffer key,  List<ColumnValue> colValues) {
+    	super(key);
+    	this.colValues = colValues;
+    }
 
     /**
      * @return the colValues
