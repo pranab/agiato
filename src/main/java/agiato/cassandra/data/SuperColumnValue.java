@@ -27,7 +27,7 @@ import java.util.Map;
  * @author pranab
  */
 public class SuperColumnValue  extends BaseColumnValue{
-    private List<ColumnValue> values;
+    private List<ColumnValue> values = new ArrayList<ColumnValue>();
 
     public void  write(String name, Map<String, String>colValues) throws Exception{
          this.name =  Util.getByteBufferFromString(name);
@@ -62,6 +62,13 @@ public class SuperColumnValue  extends BaseColumnValue{
      */
     public void setValues(List<ColumnValue> values) {
         this.values = values;
+    }
+    
+    /**
+     * @param colVal
+     */
+    public void addValue(ColumnValue colVal) {
+    	values.add(colVal);
     }
 
 }

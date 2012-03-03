@@ -46,6 +46,10 @@ public class BatchLoader {
 		}
 	}
 	
+	public int getRowCount() {
+		return rowCount;
+	}
+
 	public void  close() throws Exception {
 		dataAccess.batchUpdateSuperColumns(superRows, consLevel);
 		rowCount = 0;
