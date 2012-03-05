@@ -135,52 +135,52 @@ public class DataAccess {
      * Retirieves multiple columns from standard CF 
      */
     public  List<ColumnValue>  retrieveColumns(long rowKey,  ByteBuffer superCol, 
-        List<ByteBuffer> cols, boolean isRange, ConsistencyLevel consLevel)
+        List<ByteBuffer> cols, boolean isRange, int limit, ConsistencyLevel consLevel)
         throws Exception {
-        return retrieveSubColumns(rowKey,  null, cols,  isRange, consLevel);
+        return retrieveSubColumns(rowKey,  null, cols,  isRange, limit, consLevel);
     }
 
     /*
      * Retirieves multiple columns from standard CF 
      */
     public  List<ColumnValue>  retrieveColumns(String rowKey,  ByteBuffer superCol, 
-        List<ByteBuffer> cols, boolean isRange, ConsistencyLevel consLevel)
+        List<ByteBuffer> cols, boolean isRange, int limit, ConsistencyLevel consLevel)
         throws Exception {
-        return retrieveSubColumns(rowKey,  null, cols,  isRange, consLevel);
+        return retrieveSubColumns(rowKey,  null, cols,  isRange, limit, consLevel);
     }
     
     /*
      * Retirieves multiple columns from standard CF 
      */
     public  List<ColumnValue>  retrieveColumns(ByteBuffer rowKey,  ByteBuffer superCol, 
-        List<ByteBuffer> cols, boolean isRange, ConsistencyLevel consLevel)
+        List<ByteBuffer> cols, boolean isRange, int limit, ConsistencyLevel consLevel)
         throws Exception {
-        return retrieveSubColumns(rowKey,  null, cols,  isRange, consLevel);
+        return retrieveSubColumns(rowKey,  null, cols,  isRange, limit, consLevel);
     }
     
     /*
      * Retirieves multiple columns from super CF 
      */
     public  List<ColumnValue>  retrieveSubColumns(String rowKey,  ByteBuffer superCol, 
-        List<ByteBuffer> cols, boolean isRange, ConsistencyLevel consLevel)
+        List<ByteBuffer> cols, boolean isRange, int limit, ConsistencyLevel consLevel)
         throws Exception {
-        return retrieveSubColumns(Util.getByteBufferFromString(rowKey),  superCol,  cols,  isRange,  consLevel);
+        return retrieveSubColumns(Util.getByteBufferFromString(rowKey),  superCol,  cols,  isRange, limit, consLevel);
     }
     
     /*
      * Retirieves multiple columns from super CF 
      */
     public  List<ColumnValue>  retrieveSubColumns(long rowKey,  ByteBuffer superCol, 
-        List<ByteBuffer> cols, boolean isRange, ConsistencyLevel consLevel)
+        List<ByteBuffer> cols, boolean isRange, int limit, ConsistencyLevel consLevel)
         throws Exception {
-        return retrieveSubColumns(Util.getByteBufferFromLong(rowKey),  superCol,  cols,  isRange,  consLevel);
+        return retrieveSubColumns(Util.getByteBufferFromLong(rowKey),  superCol,  cols,  isRange,  limit, consLevel);
     }
 
     /*
      * Retirieves multiple columns from super CF 
      */
     public  List<ColumnValue>  retrieveSubColumns(ByteBuffer rowKey,  ByteBuffer superCol, 
-        List<ByteBuffer> cols, boolean isRange, ConsistencyLevel consLevel)
+        List<ByteBuffer> cols, boolean isRange, int limit, ConsistencyLevel consLevel)
         throws Exception {
         Connector connector = dataManager.borrowConnection();
         Cassandra.Client client = connector.openConnection();
@@ -193,6 +193,9 @@ public class DataAccess {
                 sliceRange.setStart(cols.get(0));
                 sliceRange.setFinish(cols.get(1));
                 slicePredicate.setSlice_range(sliceRange);
+                if (limit > 0){
+                	sliceRange.setCount(limit);
+                }
             } else {
                 slicePredicate.setColumn_names(cols);
             }
