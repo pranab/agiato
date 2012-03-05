@@ -30,10 +30,10 @@ public class BatchLoader {
 	private List<SuperRow> superRows = new ArrayList<SuperRow>();
 	private DataAccess dataAccess;
 	
-	public BatchLoader(String table, int batchSize, ConsistencyLevel consLevel) {
+	public BatchLoader(String colFamily,  int batchSize, ConsistencyLevel consLevel) {
 		this.batchSize = batchSize;
 		this.consLevel = consLevel;
-		dataAccess = new DataAccess(table);
+		dataAccess = new DataAccess(colFamily);
 	}
 	
 	public void addRow(ByteBuffer rowKey, List<SuperColumnValue> superColVals) throws Exception {
