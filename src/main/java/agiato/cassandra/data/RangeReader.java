@@ -52,8 +52,9 @@ public class RangeReader {
 	private int batchSizeMax;
 	private List<ColumnValue> colValues;
 	
-	public RangeReader(int batchSize, int batchSizeTolerance, int  maxFetchSize, Object startCol, int initialRangeSize, 
+	public RangeReader(Object rowKey, int batchSize, int batchSizeTolerance, int  maxFetchSize, Object startCol, int initialRangeSize, 
 			ConsistencyLevel consLevel, Object  superCol, ColumnType colType) throws IOException {
+		this.rowKey = getByteBuffer(rowKey, false);
 		this.batchSize = batchSize;
 		this.maxFetchSize = maxFetchSize;
 		this.startCol = getByteBuffer(startCol, true);
@@ -107,13 +108,13 @@ public class RangeReader {
 					curRangeSize = lastFetchCount == 0 ? curRangeSize * 2  : (batchSize  * curRangeSize) / lastFetchCount;
 				} 
 			}
+			endColLong = startColLong + curRangeSize;
+			endCol = Util.getByteBufferFromLong(endColLong);
 		}
-		endColLong = startColLong + curRangeSize;
-		endCol = Util.getByteBufferFromLong(endColLong);
 	}
 	
 	private void setStartCol() throws IOException {
-		if (colValues.size() > 0) {
+		if (lastFetchCount > 0) {
 			ColumnValue colVal = colValues.get(colValues.size()-1);
 			if (colType == ColumnType.COL_LONG) {
 				startColLong = Util.getLongFromByteBuffer(colVal.getName()) + 1;
