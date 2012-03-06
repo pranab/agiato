@@ -78,6 +78,7 @@ public class RangeReader {
 		colRange.add(startCol);
 		colRange.add(endCol);
 		
+		//range query
 		colValues =  dataAccess.retrieveSubColumns( rowKey,   superCol, colRange, true, maxFetchSize, consLevel);		
 		lastFetchCount = colValues.size();
 		
