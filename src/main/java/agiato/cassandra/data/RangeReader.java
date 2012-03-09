@@ -52,8 +52,9 @@ public class RangeReader {
 	private int batchSizeMax;
 	private List<ColumnValue> colValues;
 	
-	public RangeReader(Object rowKey, int batchSize, int batchSizeTolerance, int  maxFetchSize, Object startCol, int initialRangeSize, 
-			ConsistencyLevel consLevel, Object  superCol, ColumnType colType) throws IOException {
+	public RangeReader(String colFam, Object rowKey, int batchSize, int batchSizeTolerance, int  maxFetchSize, Object startCol, 
+		int initialRangeSize,  ConsistencyLevel consLevel, Object  superCol, ColumnType colType) throws IOException {
+		this.dataAccess = new DataAccess(colFam);
 		this.rowKey = getByteBuffer(rowKey, false);
 		this.batchSize = batchSize;
 		this.maxFetchSize = maxFetchSize;
