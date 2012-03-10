@@ -51,6 +51,8 @@ public class RangeReader {
 	private int batchSizeMin;
 	private int batchSizeMax;
 	private List<ColumnValue> colValues;
+	private boolean atRowEnd;
+	private static ByteBuffer endMarker;
 	
 	public RangeReader(String colFam, Object rowKey, int batchSize, int batchSizeTolerance, int  maxFetchSize, Object startCol, 
 		int initialRangeSize,  ConsistencyLevel consLevel, Object  superCol, ColumnType colType) throws IOException {
@@ -70,21 +72,29 @@ public class RangeReader {
 		curRangeSize = initialRangeSize;
 		batchSizeMin = ((100 - batchSizeTolerance) * batchSize) / 100;
 		batchSizeMax = ((100 +batchSizeTolerance) * batchSize) / 100;
+		if (null == endMarker) {
+			endMarker = Util.getByteBufferFromString("");
+		}
 	}
 	
 	public List<ColumnValue> getColumnValues() throws Exception {
-	    //set column range
-		setEndCol();
-		colRange.clear();
-		colRange.add(startCol);
-		colRange.add(endCol);
-		
-		//range query
-		colValues =  dataAccess.retrieveSubColumns( rowKey,   superCol, colRange, true, maxFetchSize, consLevel);		
-		lastFetchCount = colValues.size();
-		
-		//reset start column
-		setStartCol();
+		if (!atRowEnd) {
+		    //set column range
+			setEndCol();
+			colRange.clear();
+			colRange.add(startCol);
+			colRange.add(endCol);
+			
+			//range query
+			colValues =  dataAccess.retrieveSubColumns( rowKey,   superCol, colRange, true, maxFetchSize, consLevel);		
+			atRowEnd = endCol == endMarker &&  colValues.size() <  maxFetchSize;
+			lastFetchCount = colValues.size();
+			
+			//reset start column
+			setStartCol();
+		} else {
+			colValues = null;
+		}
 		return colValues;
 	}
 	
@@ -110,8 +120,12 @@ public class RangeReader {
 					curRangeSize = lastFetchCount == 0 ? curRangeSize * 2  : (batchSize  * curRangeSize) / lastFetchCount;
 				} 
 			}
-			endColLong = startColLong + curRangeSize;
-			endCol = Util.getByteBufferFromLong(endColLong);
+			if (Long.MAX_VALUE - curRangeSize > startColLong){
+				endColLong = startColLong + curRangeSize;
+				endCol = Util.getByteBufferFromLong(endColLong);
+			} else {
+				endCol =endMarker;
+			}
 		}
 	}
 	
@@ -144,5 +158,9 @@ public class RangeReader {
 	
 	public void setSuperCol(Object  superCol) throws IOException{
 		this.superCol= getByteBuffer(superCol, false);
+	}
+
+	public boolean isAtRowEnd() {
+		return atRowEnd;
 	}
 }
