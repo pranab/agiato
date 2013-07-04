@@ -32,25 +32,45 @@ import org.apache.cassandra.thrift.ColumnOrSuperColumn;
 
 
 /**
- *
+ * byte encoding decoding
  * @author pranab
  */
 public class Util {
     public static final String ENCODING = "utf-8";
 
+    /**
+     * @param value
+     * @return
+     * @throws IOException
+     */
     public static byte[] getBytesFromString(String value) throws IOException{
        return value.getBytes(Util.ENCODING);
     }
 
+    /**
+     * @param value
+     * @return
+     * @throws IOException
+     */
     public static ByteBuffer getByteBufferFromString(String value) throws IOException{
        return ByteBuffer.wrap(value.getBytes(Util.ENCODING));
     }
 
 
+    /**
+     * @param data
+     * @return
+     * @throws IOException
+     */
     public static ByteBuffer getByteBufferFromBytes(byte[] data) throws IOException{
             return ByteBuffer.wrap(data);
     }
 
+    /**
+     * @param value
+     * @return
+     * @throws IOException
+     */
     public static byte[] getBytesFromLong(long value) throws IOException{
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         DataOutputStream dos = new DataOutputStream(bos);
@@ -59,6 +79,11 @@ public class Util {
         return bos.toByteArray();
     }
     
+    /**
+     * @param value
+     * @return
+     * @throws IOException
+     */
     public static byte[] getBytesFromDouble(double value) throws IOException{
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         DataOutputStream dos = new DataOutputStream(bos);
@@ -67,6 +92,11 @@ public class Util {
         return bos.toByteArray();
     }
 
+    /**
+     * @param values
+     * @return
+     * @throws IOException
+     */
     public static byte[] getBytesFromList(List<Object> values) throws IOException{
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         DataOutputStream dos = new DataOutputStream(bos);
@@ -83,18 +113,37 @@ public class Util {
         return bos.toByteArray();
     }
     
+    /**
+     * @param values
+     * @return
+     * @throws IOException
+     */
     public static ByteBuffer getByteBufferFromList(List<Object> values) throws IOException{
         return ByteBuffer.wrap(getBytesFromList(values));
     }
     
+    /**
+     * @param value
+     * @return
+     * @throws IOException
+     */
     public static ByteBuffer getByteBufferFromLong(long value) throws IOException{
         return ByteBuffer.wrap(getBytesFromLong(value));
     }    
 
+    /**
+     * @param value
+     * @return
+     * @throws IOException
+     */
     public static ByteBuffer getByteBufferFromDouble(double value) throws IOException{
         return ByteBuffer.wrap(getBytesFromDouble(value));
     }    
     
+    /**
+     * @param uuid
+     * @return
+     */
     public static byte[] getBytesFromUUID(java.util.UUID uuid) {
         long msb = uuid.getMostSignificantBits();
         long lsb = uuid.getLeastSignificantBits();
@@ -110,23 +159,47 @@ public class Util {
         return buffer;
     }
     
+    /**
+     * @param uuid
+     * @return
+     */
     public static ByteBuffer getByteBufferFromUUID(java.util.UUID uuid) {
         return ByteBuffer.wrap(getBytesFromUUID(uuid));
     }    
     
 
+    /**
+     * @param data
+     * @return
+     * @throws IOException
+     */
     public static double getDoubleFromByteBuffer(ByteBuffer data) throws IOException{
         return getDoubleFromBytes(data.array());
     }
 
+    /**
+     * @param data
+     * @return
+     * @throws IOException
+     */
     public static String getStringFromBytes(byte[] data) throws IOException{
         return new String(data, ENCODING);
     }
 
+    /**
+     * @param data
+     * @return
+     * @throws IOException
+     */
     public static String getStringFromByteBuffer(ByteBuffer data) throws IOException{
         return new String(data.array(), ENCODING);
     }
     
+    /**
+     * @param data
+     * @return
+     * @throws IOException
+     */
     public static Long getLongFromBytes(byte[] data) throws IOException{
         ByteArrayInputStream bis = new ByteArrayInputStream(data);
         DataInputStream dis = new DataInputStream(bis);
@@ -134,6 +207,11 @@ public class Util {
         return value;
     }
     
+    /**
+     * @param data
+     * @return
+     * @throws IOException
+     */
     public static Double getDoubleFromBytes(byte[] data) throws IOException{
         ByteArrayInputStream bis = new ByteArrayInputStream(data);
         DataInputStream dis = new DataInputStream(bis);
@@ -141,10 +219,21 @@ public class Util {
         return value;
     }
 
+    /**
+     * @param data
+     * @return
+     * @throws IOException
+     */
     public static Long getLongFromByteBuffer(ByteBuffer data) throws IOException{
         return getLongFromBytes(data.array());
     }
 
+    /**
+     * @param data
+     * @param classes
+     * @return
+     * @throws IOException
+     */
     public static List<Object>  getListFromBytes(byte[] data, List<Class> classes) throws IOException{
         List<Object> values = new ArrayList<Object>();
         ByteArrayInputStream bis = new ByteArrayInputStream(data);
@@ -165,14 +254,27 @@ public class Util {
         return values;
     }
     
+    /**
+     * @param data
+     * @param classes
+     * @return
+     * @throws IOException
+     */
     public static List<Object>  getListFromByteBuffer(ByteBuffer data, List<Class> classes) throws IOException{
         return getListFromBytes(data.array(), classes);
     }
     
+    /**
+     * @return
+     */
     public static java.util.UUID getTimeUUID(){
         return java.util.UUID.fromString(new com.eaio.uuid.UUID().toString());
     }
 
+    /**
+     * @param uuid
+     * @return
+     */
     public static java.util.UUID getUUIDFromBytes( byte[] uuid ){
         long msb = 0;
         long lsb = 0;
@@ -186,10 +288,19 @@ public class Util {
         return java.util.UUID.fromString(u.toString());
     }
 
+    /**
+     * @param uuid
+     * @return
+     */
     public static java.util.UUID getUUIDFromByteBuffer(ByteBuffer uuid ){
         return getUUIDFromBytes(uuid.array());
     }
     
+    /**
+     * @param cList
+     * @return
+     * @throws Exception
+     */
     public static  Map<String, String> getColumns( List<ColumnOrSuperColumn> cList) throws Exception{
         Map<String, String> columns = new HashMap<String, String>();
 
@@ -204,9 +315,33 @@ public class Util {
         return columns;
     }
     
+    /**
+     * @return
+     */
     public static ByteBuffer getEmptyByteBuffer(){
         byte[] data = {};
         return ByteBuffer.wrap(data);
     }
 
+    /**
+     * @param bytesList
+     * @return
+     */
+    public static  byte[] makeComposite(List<byte[]> bytesList){
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        for (byte[] bytes : bytesList){
+        	//length
+        	bos.write( (byte) ((bytes.length >> 8 ) & 0xFF)) ;
+        	bos.write( (byte) (bytes.length & 0xFF)) ;
+          
+        	//content
+        	for (int j=0;j<bytes.length;j++){
+        		bos.write( bytes[j] & 0xFF) ;
+        	}
+        	
+        	//sentinel
+        	bos.write((byte)0);
+        }
+        return bos.toByteArray();
+      }   
 }
