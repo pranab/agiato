@@ -323,6 +323,17 @@ public class Util {
         return ByteBuffer.wrap(data);
     }
 
+    public static byte[] getBytesFromObject(Object obj) throws IOException {
+    	byte[] bytes = null;
+		if (obj instanceof String) {
+			bytes = getBytesFromString((String)obj);
+		} else if (obj instanceof Long) {
+			bytes = getBytesFromLong((Long)obj);
+		} else if (obj instanceof Double) {
+			bytes = getBytesFromDouble((Double)obj);
+		}
+		return bytes;
+    }
     /**
      * @param bytesList
      * @return

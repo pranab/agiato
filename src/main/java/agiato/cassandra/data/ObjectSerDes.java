@@ -24,6 +24,7 @@ import java.util.List;
 
 
 /**
+ * Create column values from nested objects and vice versa
  * @author pranab
  *
  */
@@ -31,6 +32,8 @@ public class ObjectSerDes {
 	private int rowKeyCompCount;
 	private int primKeyCompnentCount;
 	private List<NamedObject> traversedPath;
+	private ByteBuffer rowKey;
+	private List<ColumnValue> colValues;
 
 	/**
 	 * @param rowKeyCompCount
@@ -83,7 +86,7 @@ public class ObjectSerDes {
 			if (first) {
 				first = false;
 			} else {
-				prefix = prefix + obj.getName() + ":";
+				prefix = prefix + obj.getName() + ".";
 			}
 		}
 		return prefix;
@@ -93,26 +96,88 @@ public class ObjectSerDes {
 	 * @throws IOException
 	 */
 	public void serialize() throws IOException {
+		//column values
 		byte[] bytes = null;
 		for (NamedObject obj : traversedPath) {
 			Object val = obj.getValue();
-			if (val instanceof String) {
-				bytes = Util.getBytesFromString((String)val);
-			} else if (val instanceof Long) {
-				bytes = Util.getBytesFromLong((Long)val);
-			} else if (val instanceof Double) {
-				bytes = Util.getBytesFromDouble((Double)val);
-			}
+			bytes = Util.getBytesFromObject(val);
 			obj.setValue(bytes);
+		}
+		
+		//row key
+		List<byte[]> byteArrList = new ArrayList<byte[]>();
+		for (int i =0; i < rowKeyCompCount; ++i) {
+			byteArrList.add((byte[])traversedPath.get(i).getValue());
+		}
+		rowKey = ByteBuffer.wrap(Util.makeComposite(byteArrList));
+
+		//column prefix
+		byteArrList.clear();
+		for (int i = rowKeyCompCount; i < primKeyCompnentCount; ++i) {
+			byteArrList.add((byte[])traversedPath.get(i).getValue());
+		}
+		
+		//columns
+		ColumnValue colValue = null;
+		ByteBuffer col; 
+		for (int i = primKeyCompnentCount; i < traversedPath.size(); ++i) {
+			colValue = new ColumnValue();
+			
+			//name
+			bytes = Util.getBytesFromObject(traversedPath.get(i).getName());
+			byteArrList.add(bytes);
+			col = ByteBuffer.wrap(Util.makeComposite(byteArrList));
+			colValue.setName(col);
+			
+			//value 
+			col = ByteBuffer.wrap((byte[])traversedPath.get(i).getValue());
+			colValue.setValue(col);
+			
+			colValues.add(colValue);
+			byteArrList.remove(bytes);
 		}
 	}
 
+	/**
+	 * @return
+	 */
 	public List<NamedObject> getTraversedPath() {
 		return traversedPath;
 	}
 
+	/**
+	 * @param traversedPath
+	 */
 	public void setTraversedPath(List<NamedObject> traversedPath) {
 		this.traversedPath = traversedPath;
+	}
+
+	/**
+	 * @return
+	 */
+	public ByteBuffer getRowKey() {
+		return rowKey;
+	}
+
+	/**
+	 * @param rowKey
+	 */
+	public void setRowKey(ByteBuffer rowKey) {
+		this.rowKey = rowKey;
+	}
+
+	/**
+	 * @return
+	 */
+	public List<ColumnValue> getColValues() {
+		return colValues;
+	}
+
+	/**
+	 * @param colValues
+	 */
+	public void setColValues(List<ColumnValue> colValues) {
+		this.colValues = colValues;
 	}
 
 }
