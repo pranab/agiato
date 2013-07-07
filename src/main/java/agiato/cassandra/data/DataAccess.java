@@ -18,6 +18,8 @@
 package agiato.cassandra.data;
 
 import agiato.cassandra.connect.Connector;
+
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -40,20 +42,28 @@ import org.apache.cassandra.thrift.KeySlice;
 import org.apache.commons.pool.impl.GenericObjectPool;
 
 /**
- *
+ * Data  read write accessor
  * @author pranab
  */
 public class DataAccess {
     private String colFamilly;
+    private DataManager dataManager  = DataManager.instance();
 
+    /**
+     * Constructor
+     * @param colFamilly
+     */
     public DataAccess(String colFamilly) {
         this.colFamilly = colFamilly;
     }
     
-    private DataManager dataManager  = DataManager.instance();
-    
-    /*
+    /**
      * Retirieves a column from stanadard CF 
+     * @param rowKey
+     * @param colName
+     * @param consLevel
+     * @return
+     * @throws Exception
      */
     public  ColumnValue  retrieveColumn(String rowKey, ByteBuffer colName, 
         ConsistencyLevel consLevel)
@@ -61,8 +71,13 @@ public class DataAccess {
         return retrieveSubColumn(rowKey, null,  colName,  consLevel);
     }
 
-    /*
+    /**
      * Retirieves a column from stanadard CF 
+     * @param rowKey
+     * @param colName
+     * @param consLevel
+     * @return
+     * @throws Exception
      */
     public  ColumnValue  retrieveColumn(long rowKey, ByteBuffer colName, 
         ConsistencyLevel consLevel)
@@ -70,17 +85,28 @@ public class DataAccess {
         return retrieveSubColumn(rowKey, null,  colName,  consLevel);
     }
 
-    /*
+    /**
      * Retirieves a column from stanadard CF 
+     * @param rowKey
+     * @param colName
+     * @param consLevel
+     * @return
+     * @throws Exception
      */
     public  ColumnValue  retrieveColumn(ByteBuffer rowKey,   
         ByteBuffer colName, ConsistencyLevel consLevel)
         throws Exception {
         return retrieveSubColumn(rowKey, null,  colName,  consLevel);
     }
-    
-    /*
+
+    /**
      * Retirieves a column from super CF 
+     * @param rowKey
+     * @param superColName
+     * @param colName
+     * @param consLevel
+     * @return
+     * @throws Exception
      */
     public  ColumnValue  retrieveSubColumn(String rowKey, ByteBuffer superColName, 
         ByteBuffer colName, ConsistencyLevel consLevel)
@@ -89,8 +115,14 @@ public class DataAccess {
             colName, consLevel);
     }    
     
-    /*
+    /**
      * Retirieves a column from super CF 
+     * @param rowKey
+     * @param superColName
+     * @param colName
+     * @param consLevel
+     * @return
+     * @throws Exception
      */
     public  ColumnValue  retrieveSubColumn(long rowKey, ByteBuffer superColName, 
         ByteBuffer colName, ConsistencyLevel consLevel)
@@ -98,9 +130,15 @@ public class DataAccess {
         return retrieveSubColumn(Util.getByteBufferFromLong(rowKey),  superColName, 
             colName, consLevel);
     }    
-
-    /*
+    
+    /**
      * Retirieves a column from super CF 
+     * @param rowKey
+     * @param superColName
+     * @param colName
+     * @param consLevel
+     * @return
+     * @throws Exception
      */
     public  ColumnValue  retrieveSubColumn(ByteBuffer rowKey,  ByteBuffer superColName, 
         ByteBuffer colName, ConsistencyLevel consLevel)
@@ -131,8 +169,16 @@ public class DataAccess {
         return colVal;
     }
     
-    /*
+    /**
      * Retirieves multiple columns from standard CF 
+     * @param rowKey
+     * @param superCol
+     * @param cols
+     * @param isRange
+     * @param limit
+     * @param consLevel
+     * @return
+     * @throws Exception
      */
     public  List<ColumnValue>  retrieveColumns(long rowKey,  ByteBuffer superCol, 
         List<ByteBuffer> cols, boolean isRange, int limit, ConsistencyLevel consLevel)
@@ -140,17 +186,33 @@ public class DataAccess {
         return retrieveSubColumns(rowKey,  null, cols,  isRange, limit, consLevel);
     }
 
-    /*
+    /**
      * Retirieves multiple columns from standard CF 
+     * @param rowKey
+     * @param superCol
+     * @param cols
+     * @param isRange
+     * @param limit
+     * @param consLevel
+     * @return
+     * @throws Exception
      */
     public  List<ColumnValue>  retrieveColumns(String rowKey,  ByteBuffer superCol, 
         List<ByteBuffer> cols, boolean isRange, int limit, ConsistencyLevel consLevel)
         throws Exception {
         return retrieveSubColumns(rowKey,  null, cols,  isRange, limit, consLevel);
     }
-    
-    /*
+
+    /**
      * Retirieves multiple columns from standard CF 
+     * @param rowKey
+     * @param superCol
+     * @param cols
+     * @param isRange
+     * @param limit
+     * @param consLevel
+     * @return
+     * @throws Exception
      */
     public  List<ColumnValue>  retrieveColumns(ByteBuffer rowKey,  ByteBuffer superCol, 
         List<ByteBuffer> cols, boolean isRange, int limit, ConsistencyLevel consLevel)
@@ -158,8 +220,16 @@ public class DataAccess {
         return retrieveSubColumns(rowKey,  null, cols,  isRange, limit, consLevel);
     }
     
-    /*
+    /**
      * Retirieves multiple columns from super CF 
+     * @param rowKey
+     * @param superCol
+     * @param cols
+     * @param isRange
+     * @param limit
+     * @param consLevel
+     * @return
+     * @throws Exception
      */
     public  List<ColumnValue>  retrieveSubColumns(String rowKey,  ByteBuffer superCol, 
         List<ByteBuffer> cols, boolean isRange, int limit, ConsistencyLevel consLevel)
@@ -167,8 +237,16 @@ public class DataAccess {
         return retrieveSubColumns(Util.getByteBufferFromString(rowKey),  superCol,  cols,  isRange, limit, consLevel);
     }
     
-    /*
+    /**
      * Retirieves multiple columns from super CF 
+     * @param rowKey
+     * @param superCol
+     * @param cols
+     * @param isRange
+     * @param limit
+     * @param consLevel
+     * @return
+     * @throws Exception
      */
     public  List<ColumnValue>  retrieveSubColumns(long rowKey,  ByteBuffer superCol, 
         List<ByteBuffer> cols, boolean isRange, int limit, ConsistencyLevel consLevel)
@@ -176,8 +254,16 @@ public class DataAccess {
         return retrieveSubColumns(Util.getByteBufferFromLong(rowKey),  superCol,  cols,  isRange,  limit, consLevel);
     }
 
-    /*
+    /**
      * Retirieves multiple columns from super CF 
+     * @param rowKey
+     * @param superCol
+     * @param cols
+     * @param isRange
+     * @param limit
+     * @param consLevel
+     * @return
+     * @throws Exception
      */
     public  List<ColumnValue>  retrieveSubColumns(ByteBuffer rowKey,  ByteBuffer superCol, 
         List<ByteBuffer> cols, boolean isRange, int limit, ConsistencyLevel consLevel)
@@ -223,8 +309,13 @@ public class DataAccess {
         return colVals;
     }
     
-    /*
+    /**
      * Retirieves super column from super CF 
+     * @param rowKey
+     * @param superCol
+     * @param consLevel
+     * @return
+     * @throws Exception
      */
     public  SuperColumnValue  retrieveSuperColumn(String rowKey,  ByteBuffer superCol,
         ConsistencyLevel consLevel)
@@ -266,8 +357,14 @@ public class DataAccess {
         return superColVal;
     }
     
-    /*
+    /**
      * Retirieves multiple super columns from super CF 
+     * @param rowKey
+     * @param superCols
+     * @param isRange
+     * @param consLevel
+     * @return
+     * @throws Exception
      */
     public  List<SuperColumnValue>  retrieveSuperColumns(long rowKey,  List<ByteBuffer> superCols, 
         boolean isRange, ConsistencyLevel consLevel)
@@ -275,17 +372,29 @@ public class DataAccess {
         return retrieveSuperColumns(Util.getByteBufferFromLong(rowKey), superCols, isRange, consLevel);    
     }    
 
-    /*
+    /**
      * Retirieves multiple super columns from super CF 
+     * @param rowKey
+     * @param superCols
+     * @param isRange
+     * @param consLevel
+     * @return
+     * @throws Exception
      */
     public  List<SuperColumnValue>  retrieveSuperColumns(String rowKey,  List<ByteBuffer> superCols, 
         boolean isRange, ConsistencyLevel consLevel)
         throws Exception {
         return retrieveSuperColumns(Util.getByteBufferFromString(rowKey), superCols, isRange, consLevel);    
     }    
-
-    /*
+    
+    /**
      * Retirieves multiple super columns from super CF 
+     * @param rowKey
+     * @param superCols
+     * @param isRange
+     * @param consLevel
+     * @return
+     * @throws Exception
      */
     public  List<SuperColumnValue>  retrieveSuperColumns(ByteBuffer rowKey,  List<ByteBuffer> superCols, 
         boolean isRange, ConsistencyLevel consLevel)
@@ -332,8 +441,12 @@ public class DataAccess {
         return superColVals;
     }
     
-    /*
+    /**
      * Updates multiple super columns in super CF 
+     * @param rowKey
+     * @param superColVals
+     * @param consLevel
+     * @throws Exception
      */
     public  void  updateSuperColumns(String rowKey, List<SuperColumnValue> superColVals,
         ConsistencyLevel consLevel)
@@ -341,17 +454,25 @@ public class DataAccess {
         updateSuperColumns(Util.getByteBufferFromString(rowKey), superColVals, consLevel);
     }
     
-    /*
+    /**
      * Updates multiple super columns in super CF 
+     * @param rowKey
+     * @param superColVals
+     * @param consLevel
+     * @throws Exception
      */
     public  void  updateSuperColumns(long rowKey, List<SuperColumnValue> superColVals,
         ConsistencyLevel consLevel)
         throws Exception{
         updateSuperColumns(Util.getByteBufferFromLong(rowKey), superColVals, consLevel);
     }
-
-    /*
+    
+    /**
      * Updates multiple super columns in super CF 
+     * @param rowKey
+     * @param superColVals
+     * @param consLevel
+     * @throws Exception
      */
     public  void  updateSuperColumns(ByteBuffer rowKey, List<SuperColumnValue> superColVals,
         ConsistencyLevel consLevel)
@@ -397,9 +518,13 @@ public class DataAccess {
             dataManager.returnConnection(connector);
         }
     }
-
-    /*
+    
+    /**
      * Inserts multiple super columns in super CF 
+     * @param rowKey
+     * @param superColVals
+     * @param consLevel
+     * @throws Exception
      */
     public  void insertSuperColumns(ByteBuffer rowKey, List<SuperColumnValue> superColVals,
         ConsistencyLevel consLevel) 
@@ -407,27 +532,37 @@ public class DataAccess {
         updateSuperColumns(rowKey, superColVals, consLevel);
     }
     
-  
-    /*
+    /**
      * Inserts multiple super columns in super CF 
+     * @param rowKey
+     * @param superColVals
+     * @param consLevel
+     * @throws Exception
      */
     public  void insertSuperColumns(String rowKey, List<SuperColumnValue> superColVals,
         ConsistencyLevel consLevel) 
         throws Exception {
         updateSuperColumns(rowKey, superColVals, consLevel);
     }
-
-    /*
+    
+    /**
      * Inserts multiple super columns in super CF 
+     * @param rowKey
+     * @param superColVals
+     * @param consLevel
+     * @throws Exception
      */
     public  void insertSuperColumns(long rowKey, List<SuperColumnValue> superColVals,
         ConsistencyLevel consLevel) 
         throws Exception {
         updateSuperColumns(rowKey, superColVals, consLevel);
     }
-
-    /*
+    
+    /**
      * Batch updates multiple super column rows  
+     * @param superRows
+     * @param consLevel
+     * @throws Exception
      */
     public  void  batchUpdateSuperColumns(List<SuperRow> superRows, ConsistencyLevel consLevel)
         throws Exception{
@@ -447,8 +582,11 @@ public class DataAccess {
 	     }    	
     }
     
-    /*
+    /**
      * Batch updates multiple super column rows  
+     * @param superRows
+     * @param consLevel
+     * @throws Exception
      */
     public  void  batchInsertSuperColumns(List<SuperRow> superRows,
         ConsistencyLevel consLevel)
@@ -456,6 +594,11 @@ public class DataAccess {
     	batchUpdateSuperColumns(superRows, consLevel);
     }
     
+    /**
+     * @param superColVals
+     * @param timestamp
+     * @return
+     */
     private Map<String, List<Mutation>> getMutations(List<SuperColumnValue> superColVals, long timestamp) {
         List<Mutation> mutations = new ArrayList<Mutation>();
 
@@ -470,7 +613,6 @@ public class DataAccess {
                 col.setTimestamp(timestamp);  
                 columns.add(col);
             }
-
             
             SuperColumn superColumn = new SuperColumn(superCol, columns);
             ColumnOrSuperColumn columnOrSuperColumn = new ColumnOrSuperColumn();
@@ -481,15 +623,17 @@ public class DataAccess {
             mutations.add(mutation);
         }
 
-
         Map<String, List<Mutation>> mutationsForColumnFamily = new HashMap<String, List<Mutation>>();
         mutationsForColumnFamily.put(colFamilly, mutations);
     	return mutationsForColumnFamily;
     }
     
-    
-    /*
+    /**
      * Retirieves all columns from standard CF 
+     * @param rowKey
+     * @param consLevel
+     * @return
+     * @throws Exception
      */
     public  List<ColumnValue>  retrieveColumns(String rowKey, ConsistencyLevel consLevel)
         throws Exception {
@@ -510,8 +654,14 @@ public class DataAccess {
         return colValues;
      }
 
-    /*
+    /**
      * Queries all rows from standard CF using native index
+     * @param column
+     * @param operator
+     * @param colValue
+     * @param consLevel
+     * @return
+     * @throws Exception
      */
     public  List<SimpleRow>  queryColumns(ByteBuffer column, IndexOperator operator, 
             ByteBuffer colValue, ConsistencyLevel consLevel)
@@ -535,7 +685,6 @@ public class DataAccess {
             SlicePredicate slicePredicate = slicePredicateWithAllCol();
             List<KeySlice> keys = client.get_indexed_slices(columnParent, indexClause, slicePredicate, consLevel);
 
-
             for (KeySlice ks : keys){
                 SimpleRow row = new SimpleRow();
                 ByteBuffer key = ks.bufferForKey();
@@ -553,8 +702,13 @@ public class DataAccess {
         return rows;
     }
     
-    /*
+    /**
      * Queries all rows from standard CF using agiato index
+     * @param query
+     * @param args
+     * @param consLevel
+     * @return
+     * @throws Exception
      */
     public  List<SimpleRow> queryColumns(String query, List<Object> args, ConsistencyLevel consLevel)
         throws Exception {
@@ -564,8 +718,13 @@ public class DataAccess {
         return rows;
      }    
 
-    /*
-     * Inserts columnn values in standard CF 
+    
+    /**
+     * Inserts column values in standard CF 
+     * @param rowKey
+     * @param colVals
+     * @param consLevel
+     * @throws Exception
      */
     public  void insertColumns(String rowKey, List<ColumnValue> colVals, ConsistencyLevel consLevel)
         throws Exception {
@@ -582,24 +741,37 @@ public class DataAccess {
         IndexManager.instance().createIndex(colFamilly, Util.getByteBufferFromLong(rowKey), colVals);
     }
 
-    /*
-     * Updates columnn values in standard CF 
+    
+    /**
+     * Updates column values in standard CF 
+     * @param rowKey
+     * @param colVals
+     * @param consLevel
+     * @throws Exception
      */
     public   void  updateColumns(String rowKey, List<ColumnValue> colVals, ConsistencyLevel consLevel)
          throws Exception{
         updateColumns(Util.getByteBufferFromString(rowKey), colVals, consLevel);
     }
     
-    /*
+    /**
      * Updates columnn values in standard CF 
+     * @param rowKey
+     * @param colVals
+     * @param consLevel
+     * @throws Exception
      */
     public   void  updateColumns(long rowKey, List<ColumnValue> colVals, ConsistencyLevel consLevel)
         throws Exception{
         updateColumns(Util.getByteBufferFromLong(rowKey), colVals, consLevel);
     }
     
-    /*
-     * Updates columnn values in standard CF 
+    /**
+     * Updates column values in standard CF 
+     * @param rowKey
+     * @param colVals
+     * @param consLevel
+     * @throws Exception
      */
     public   void  updateColumns(ByteBuffer rowKey, List<ColumnValue> colVals, ConsistencyLevel consLevel)
          throws Exception{
@@ -635,7 +807,28 @@ public class DataAccess {
         }
         
     }
-
+    
+    /**
+     * Updates dynamic nested  object with standard col and composite key
+     * @param obj
+     * @param rowKeyCompCount
+     * @param primKeyCompnentCount
+     * @param consLevel
+     * @throws Exception
+     */
+    public   void  updateObject(ObjectNode obj, int rowKeyCompCount, int primKeyCompnentCount, 
+    		ConsistencyLevel consLevel) throws Exception {
+    	ObjectSerDes serDes = new ObjectSerDes(rowKeyCompCount,  primKeyCompnentCount);
+    	serDes.deconstruct(obj);
+    	serDes.serialize();
+    	updateColumns(serDes.getRowKey(), serDes.getColValues(),  consLevel);
+	}
+    
+    /**
+     * returns list of standard columns
+     * @param colSuperCols
+     * @return
+     */
     private List<ColumnValue> getColumns(List<ColumnOrSuperColumn> colSuperCols){
         List<ColumnValue> colValues = new ArrayList<ColumnValue>();
         for (ColumnOrSuperColumn colSup : colSuperCols){
@@ -650,6 +843,10 @@ public class DataAccess {
         return colValues;
     }
     
+    /**
+     * Returns col range to include all
+     * @return
+     */
     private SlicePredicate slicePredicateWithAllCol(){
         SlicePredicate slicePredicate = new SlicePredicate();
         SliceRange sliceRange = new SliceRange();

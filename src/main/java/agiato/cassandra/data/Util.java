@@ -39,6 +39,7 @@ public class Util {
     public static final String ENCODING = "utf-8";
 
     /**
+     * byte array from string
      * @param value
      * @return
      * @throws IOException
@@ -48,6 +49,7 @@ public class Util {
     }
 
     /**
+     * ByteBuffer from String
      * @param value
      * @return
      * @throws IOException
@@ -58,6 +60,7 @@ public class Util {
 
 
     /**
+     * ByteBuffer from byte array
      * @param data
      * @return
      * @throws IOException
@@ -67,6 +70,7 @@ public class Util {
     }
 
     /**
+     * byte array from long
      * @param value
      * @return
      * @throws IOException
@@ -80,6 +84,7 @@ public class Util {
     }
     
     /**
+     * byte array from double
      * @param value
      * @return
      * @throws IOException
@@ -93,6 +98,7 @@ public class Util {
     }
 
     /**
+     * byte array from list
      * @param values
      * @return
      * @throws IOException
@@ -114,6 +120,7 @@ public class Util {
     }
     
     /**
+     * ByteBuffer from list
      * @param values
      * @return
      * @throws IOException
@@ -123,6 +130,7 @@ public class Util {
     }
     
     /**
+     * ByteBuffer from long
      * @param value
      * @return
      * @throws IOException
@@ -132,6 +140,7 @@ public class Util {
     }    
 
     /**
+     * ByteBuffer from double
      * @param value
      * @return
      * @throws IOException
@@ -141,6 +150,7 @@ public class Util {
     }    
     
     /**
+     * byte array from UUID
      * @param uuid
      * @return
      */
@@ -160,6 +170,7 @@ public class Util {
     }
     
     /**
+     * ByteBuffer from UUID
      * @param uuid
      * @return
      */
@@ -169,6 +180,7 @@ public class Util {
     
 
     /**
+     * double from ByteBuffer
      * @param data
      * @return
      * @throws IOException
@@ -178,6 +190,7 @@ public class Util {
     }
 
     /**
+     * string from byte array
      * @param data
      * @return
      * @throws IOException
@@ -187,6 +200,7 @@ public class Util {
     }
 
     /**
+     * string from ByteBuffer
      * @param data
      * @return
      * @throws IOException
@@ -196,6 +210,7 @@ public class Util {
     }
     
     /**
+     * long from  byte array
      * @param data
      * @return
      * @throws IOException
@@ -208,6 +223,7 @@ public class Util {
     }
     
     /**
+     * double from byte array
      * @param data
      * @return
      * @throws IOException
@@ -220,6 +236,7 @@ public class Util {
     }
 
     /**
+     * long from ByteBuffer
      * @param data
      * @return
      * @throws IOException
@@ -229,6 +246,7 @@ public class Util {
     }
 
     /**
+     * list from byte array
      * @param data
      * @param classes
      * @return
@@ -255,6 +273,7 @@ public class Util {
     }
     
     /**
+     * list from ByteBuffer
      * @param data
      * @param classes
      * @return
@@ -265,6 +284,7 @@ public class Util {
     }
     
     /**
+     * time UUID
      * @return
      */
     public static java.util.UUID getTimeUUID(){
@@ -272,6 +292,7 @@ public class Util {
     }
 
     /**
+     * UUID from byte array
      * @param uuid
      * @return
      */
@@ -289,6 +310,7 @@ public class Util {
     }
 
     /**
+     * UUID from ByteBuffer
      * @param uuid
      * @return
      */
@@ -297,6 +319,7 @@ public class Util {
     }
     
     /**
+     * map from list of columns
      * @param cList
      * @return
      * @throws Exception
@@ -316,6 +339,7 @@ public class Util {
     }
     
     /**
+     * empty ByteBuffer
      * @return
      */
     public static ByteBuffer getEmptyByteBuffer(){
@@ -323,6 +347,12 @@ public class Util {
         return ByteBuffer.wrap(data);
     }
 
+    /**
+     * byte arrayfrom primitives
+     * @param obj
+     * @return
+     * @throws IOException
+     */
     public static byte[] getBytesFromObject(Object obj) throws IOException {
     	byte[] bytes = null;
 		if (obj instanceof String) {
@@ -331,10 +361,30 @@ public class Util {
 			bytes = getBytesFromLong((Long)obj);
 		} else if (obj instanceof Double) {
 			bytes = getBytesFromDouble((Double)obj);
+		} else if (obj instanceof List<?>) {
+			StringBuilder stBld = new  StringBuilder("[");
+			for (Object elem : (List<?>)obj) {
+				stBld.append(elem).append(",");
+			}
+			stBld.deleteCharAt(stBld.length()-1);
+			stBld.append("]");
+			bytes = getBytesFromString(stBld.toString());
+		} else if (obj instanceof Map<?, ?>) {
+			StringBuilder stBld = new  StringBuilder("{");
+			Map<?,?> map = (Map<?,?>)obj;
+			for (Object elem : map.entrySet()) {
+				Map.Entry<?,?> entry = (Map.Entry<?,?>)elem;
+				stBld.append(entry.getKey()).append(":").append(entry.getValue());
+			}
+			stBld.deleteCharAt(stBld.length()-1);
+			stBld.append("}");
+			bytes = getBytesFromString(stBld.toString());
 		}
 		return bytes;
     }
+    
     /**
+     * makes composite column name or row key
      * @param bytesList
      * @return
      */

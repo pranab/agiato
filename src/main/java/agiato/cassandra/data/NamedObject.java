@@ -14,8 +14,6 @@
  * implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
-
-
 package agiato.cassandra.data;
 
 /**
@@ -25,7 +23,11 @@ package agiato.cassandra.data;
 public class NamedObject {
 	private String name;
 	private Object value;
-	
+
+	public NamedObject(String name) {
+		this.name = name;
+	}
+		
 	public NamedObject(String name, Object value) {
 		this.name = name;
 		this.value = value;

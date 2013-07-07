@@ -19,14 +19,20 @@ package agiato.cassandra.data;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
+ * Dynamic object
  * @author pranab
  *
  */
 public class ObjectNode extends NamedObject {
 	private List<ObjectNode> children = new ArrayList<ObjectNode>();
-	
+
+	public ObjectNode(String name) {
+		super(name);
+	}
+
 	public ObjectNode(String name, Object value) {
 		super(name,  value);
 	}
@@ -34,7 +40,27 @@ public class ObjectNode extends NamedObject {
 	public void addChild(ObjectNode child) {
 		children.add(child);
 	}
-	
+
+	public void addListChild(List<ObjectNode> listChild) {
+		int i = 0;
+		ObjectNode parent;
+		for (ObjectNode child : listChild) {
+			parent = new ObjectNode("" + i);
+			addChild(parent);
+			parent.addChild(child);
+			++i;
+		}
+	}
+
+	public void addMapChild(Map<String, ObjectNode> mapChild) {
+		ObjectNode parent;
+		for (String key : mapChild.keySet()) {
+			parent = new ObjectNode(key);
+			addChild(parent);
+			parent.addChild(mapChild.get(key));
+		}
+	}
+
 	public boolean hasChildren() {
 		return !children.isEmpty();
 	}
