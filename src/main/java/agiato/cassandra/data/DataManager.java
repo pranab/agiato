@@ -131,36 +131,38 @@ public class DataManager {
             //create cf for indexes
             KsDef ksDef = client.describe_keyspace(keySpaceName);
             Set<String> colFamSet = new HashSet<String>();
-            for (IndexDef indexDef : metaDatamanager.getIndexes()){
-                String cfName = indexDef.getColFamilyName();
-                List<CfDef> cfDefs = ksDef.getCf_defs();
-                boolean cfExists = false;
-
-                for (CfDef cfDef : cfDefs){
-                    if (cfDef.getName().equals(cfName)) {
-                        cfExists = true;
-                        break;
-                    }
-                }
-
-                String colFamName = indexDef.getColFamilyName();
-                if (!cfExists && !colFamSet.contains(colFamName)){
-                    CfDef cfDef = new CfDef();
-                    cfDef.setKeyspace(keySpaceName);
-                    cfDef.setName(colFamName);
-                    boolean isSuperCol = indexDef.isCatIndexName();
-                    cfDef.setColumn_type(isSuperCol? "Super" : "Standard");
-                    cfDef.setComparator_type(indexDef.getIndexedDataType() == IndexDef.TYPE_STRING? "UTF8Type" : "LongType");
-                    if (isSuperCol){
-                        cfDef.setSubcomparator_type(indexDef.getStoredDataType() == IndexDef.TYPE_STRING? "UTF8Type" : "LongType");
-                    }
-                    cfDef.setKey_cache_size(indexDef.getIndexKeysCached());
-                    cfDef.setRow_cache_size(indexDef.getIndexRowsCached());
-                    
-                    client.system_add_column_family(cfDef);
-                    colFamSet.add(colFamName);
-
-                }
+            if (null != metaDatamanager.getIndexes()) {
+	            for (IndexDef indexDef : metaDatamanager.getIndexes()){
+	                String cfName = indexDef.getColFamilyName();
+	                List<CfDef> cfDefs = ksDef.getCf_defs();
+	                boolean cfExists = false;
+	
+	                for (CfDef cfDef : cfDefs){
+	                    if (cfDef.getName().equals(cfName)) {
+	                        cfExists = true;
+	                        break;
+	                    }
+	                }
+	
+	                String colFamName = indexDef.getColFamilyName();
+	                if (!cfExists && !colFamSet.contains(colFamName)){
+	                    CfDef cfDef = new CfDef();
+	                    cfDef.setKeyspace(keySpaceName);
+	                    cfDef.setName(colFamName);
+	                    boolean isSuperCol = indexDef.isCatIndexName();
+	                    cfDef.setColumn_type(isSuperCol? "Super" : "Standard");
+	                    cfDef.setComparator_type(indexDef.getIndexedDataType() == IndexDef.TYPE_STRING? "UTF8Type" : "LongType");
+	                    if (isSuperCol){
+	                        cfDef.setSubcomparator_type(indexDef.getStoredDataType() == IndexDef.TYPE_STRING? "UTF8Type" : "LongType");
+	                    }
+	                    cfDef.setKey_cache_size(indexDef.getIndexKeysCached());
+	                    cfDef.setRow_cache_size(indexDef.getIndexRowsCached());
+	                    
+	                    client.system_add_column_family(cfDef);
+	                    colFamSet.add(colFamName);
+	
+	                }
+	            }
             }
             
             

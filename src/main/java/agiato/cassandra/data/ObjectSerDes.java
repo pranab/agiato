@@ -96,6 +96,8 @@ public class ObjectSerDes {
 	 * @throws IOException
 	 */
 	public void serialize() throws IOException {
+		colValues = new ArrayList<ColumnValue>();
+		
 		//column values
 		byte[] bytes = null;
 		for (NamedObject obj : traversedPath) {
