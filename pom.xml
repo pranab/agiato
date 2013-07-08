@@ -19,7 +19,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
             <properties>
                 <log4j.version>1.2.16</log4j.version>
                 <thrift.version>0.8.0</thrift.version>
-                <cassandra.version>1.0.6</cassandra.version>
+                <cassandra.version>1.2.6</cassandra.version>
                 <jdk.level>1.6</jdk.level>
             </properties>
         </profile>

@@ -84,6 +84,20 @@ public class Util {
     }
     
     /**
+     * byte array from long
+     * @param value
+     * @return
+     * @throws IOException
+     */
+    public static byte[] getBytesFromInt(int value) throws IOException{
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        DataOutputStream dos = new DataOutputStream(bos);
+        dos.writeInt(value);
+        dos.flush();
+        return bos.toByteArray();
+    }
+
+    /**
      * byte array from double
      * @param value
      * @return
@@ -111,6 +125,8 @@ public class Util {
                 dos.writeUTF((String)value);
             else if (value instanceof Long)
                 dos.writeLong((Long)value);
+            else if (value instanceof Integer)
+                dos.writeInt((Integer)value);
             else if (value instanceof Double)
                 dos.writeDouble((Long)value);
             
@@ -137,6 +153,16 @@ public class Util {
      */
     public static ByteBuffer getByteBufferFromLong(long value) throws IOException{
         return ByteBuffer.wrap(getBytesFromLong(value));
+    }    
+
+    /**
+     * ByteBuffer from long
+     * @param value
+     * @return
+     * @throws IOException
+     */
+    public static ByteBuffer getByteBufferFromInt(int value) throws IOException{
+        return ByteBuffer.wrap(getBytesFromInt(value));
     }    
 
     /**
@@ -177,8 +203,7 @@ public class Util {
     public static ByteBuffer getByteBufferFromUUID(java.util.UUID uuid) {
         return ByteBuffer.wrap(getBytesFromUUID(uuid));
     }    
-    
-
+ 
     /**
      * double from ByteBuffer
      * @param data
@@ -223,6 +248,19 @@ public class Util {
     }
     
     /**
+     * long from  byte array
+     * @param data
+     * @return
+     * @throws IOException
+     */
+    public static Integer getIntFromBytes(byte[] data) throws IOException{
+        ByteArrayInputStream bis = new ByteArrayInputStream(data);
+        DataInputStream dis = new DataInputStream(bis);
+        Integer value =  dis.readInt();
+        return value;
+    }
+
+    /**
      * double from byte array
      * @param data
      * @return
@@ -246,6 +284,16 @@ public class Util {
     }
 
     /**
+     * int from ByteBuffer
+     * @param data
+     * @return
+     * @throws IOException
+     */
+    public static Integer getIntFromByteBuffer(ByteBuffer data) throws IOException{
+        return getIntFromBytes(data.array());
+    }
+
+    /**
      * list from byte array
      * @param data
      * @param classes
@@ -262,6 +310,8 @@ public class Util {
                 value =  dis.readUTF();
             else if (cl == Long.class)
                 value =  dis.readLong();
+            else if (cl == Integer.class)
+                value =  dis.readInt();
             else if (cl == Double.class)
                 value =  dis.readDouble();
             
@@ -359,6 +409,8 @@ public class Util {
 			bytes = getBytesFromString((String)obj);
 		} else if (obj instanceof Long) {
 			bytes = getBytesFromLong((Long)obj);
+		} else if (obj instanceof Integer) {
+			bytes = getBytesFromInt((Integer)obj);
 		} else if (obj instanceof Double) {
 			bytes = getBytesFromDouble((Double)obj);
 		} else if (obj instanceof List<?>) {
