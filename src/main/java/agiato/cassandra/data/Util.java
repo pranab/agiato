@@ -441,20 +441,26 @@ public class Util {
      * @return
      */
     public static  byte[] makeComposite(List<byte[]> bytesList){
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        for (byte[] bytes : bytesList){
-        	//length
-        	bos.write( (byte) ((bytes.length >> 8 ) & 0xFF)) ;
-        	bos.write( (byte) (bytes.length & 0xFF)) ;
-          
-        	//content
-        	for (int j=0;j<bytes.length;j++){
-        		bos.write( bytes[j] & 0xFF) ;
-        	}
-        	
-        	//sentinel
-        	bos.write((byte)0);
-        }
-        return bos.toByteArray();
+    	byte[] encBytes;
+    	if (bytesList.size() == 1) {
+    		encBytes = bytesList.get(0);
+    	} else  {
+	        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+	        for (byte[] bytes : bytesList){
+	        	//length
+	        	bos.write( (byte) ((bytes.length >> 8 ) & 0xFF)) ;
+	        	bos.write( (byte) (bytes.length & 0xFF)) ;
+	          
+	        	//content
+	        	for (int j=0;j<bytes.length;j++){
+	        		bos.write( bytes[j] & 0xFF) ;
+	        	}
+	        	
+	        	//sentinel
+	        	bos.write((byte)0);
+	        }
+	        encBytes =  bos.toByteArray();
+    	}
+    	return encBytes;
       }   
 }

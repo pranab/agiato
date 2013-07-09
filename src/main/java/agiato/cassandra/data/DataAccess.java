@@ -741,6 +741,17 @@ public class DataAccess {
         IndexManager.instance().createIndex(colFamilly, Util.getByteBufferFromLong(rowKey), colVals);
     }
 
+    /**
+     * @param obj
+     * @param rowKeyCompCount
+     * @param primKeyCompnentCount
+     * @param consLevel
+     * @throws Exception
+     */
+    public   void  insertObject(ObjectNode obj, int rowKeyCompCount, int primKeyCompnentCount, 
+    		ConsistencyLevel consLevel) throws Exception {
+    	updateObject( obj,  rowKeyCompCount,  primKeyCompnentCount, consLevel);
+    }
     
     /**
      * Updates column values in standard CF 
