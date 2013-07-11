@@ -128,7 +128,7 @@ public class ObjectSerDes {
 			//name
 			bytes = Util.getBytesFromObject(traversedPath.get(i).getName());
 			byteArrList.add(bytes);
-			col = ByteBuffer.wrap(Util.makeComposite(byteArrList));
+			col = ByteBuffer.wrap(Util.serializeComposite(byteArrList));
 			colValue.setName(col);
 			
 			//value 

@@ -440,7 +440,7 @@ public class Util {
      * @param bytesList
      * @return
      */
-    public static  byte[] makeComposite(List<byte[]> bytesList){
+    public static  byte[] serializeComposite(List<byte[]> bytesList){
     	byte[] encBytes;
     	if (bytesList.size() == 1) {
     		encBytes = bytesList.get(0);
@@ -463,4 +463,31 @@ public class Util {
     	}
     	return encBytes;
       }   
+
+    /**
+     * desrializes encoded composite key
+     * @param encBytes
+     * @return
+     */
+    public static  List<byte[]>  deserializeComposite(byte[] encBytes) {
+    	List<byte[]> bytesList = new ArrayList<byte[]>();
+    	int cur = 0;
+    	int elemLen = 0;
+    	byte[] elemBytes = null;
+    	while (cur  < encBytes.length) {
+    		//length
+    		elemLen = ( encBytes[cur++] & 0xFF) << 8;
+    		elemLen = elemLen | (encBytes[cur++] & 0xFF);
+    		elemBytes = new byte[elemLen];
+    		
+    		//copy element
+    		System.arraycopy(encBytes, cur,  elemBytes,  0, elemLen);
+    		bytesList.add(elemBytes);
+    		
+    		//reposition
+    		cur += elemLen + 1;
+    	}
+    	return bytesList;
+    }
+    
 }
