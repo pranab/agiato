@@ -748,9 +748,8 @@ public class DataAccess {
      * @param consLevel
      * @throws Exception
      */
-    public   void  insertObject(ObjectNode obj, int rowKeyCompCount, int primKeyCompnentCount, 
-    		ConsistencyLevel consLevel) throws Exception {
-    	updateObject( obj,  rowKeyCompCount,  primKeyCompnentCount, consLevel);
+    public   void  insertObject(ObjectNode obj, PrimaryKey primKey,  ConsistencyLevel consLevel) throws Exception {
+    	updateObject( obj,  primKey, consLevel);
     }
     
     /**
@@ -827,9 +826,8 @@ public class DataAccess {
      * @param consLevel
      * @throws Exception
      */
-    public   void  updateObject(ObjectNode obj, int rowKeyCompCount, int primKeyCompnentCount, 
-    		ConsistencyLevel consLevel) throws Exception {
-    	ObjectSerDes serDes = new ObjectSerDes(rowKeyCompCount,  primKeyCompnentCount);
+    public   void  updateObject(ObjectNode obj, PrimaryKey primKey, ConsistencyLevel consLevel) throws Exception {
+    	ObjectSerDes serDes = new ObjectSerDes(primKey);
     	serDes.deconstruct(obj);
     	serDes.serialize();
     	updateColumns(serDes.getRowKey(), serDes.getColValues(),  consLevel);

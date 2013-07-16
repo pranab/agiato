@@ -29,20 +29,17 @@ import java.util.List;
  *
  */
 public class ObjectSerDes {
-	private int rowKeyCompCount;
-	private int primKeyCompnentCount;
+	private PrimaryKey primKey;
 	private List<NamedObject> traversedPath;
 	private ByteBuffer rowKey;
 	private List<ColumnValue> colValues;
 
-	/**
-	 * @param rowKeyCompCount
-	 * @param primKeyCompnentCount
+	/*
+	 * @param primKey
 	 */
-	public ObjectSerDes(int rowKeyCompCount, int primKeyCompnentCount) {
+	public  ObjectSerDes(PrimaryKey primKey) {
 		super();
-		this.rowKeyCompCount = rowKeyCompCount;
-		this.primKeyCompnentCount = primKeyCompnentCount;
+		this.primKey = primKey;
 	}
 
 	/**
@@ -106,29 +103,34 @@ public class ObjectSerDes {
 			obj.setValue(bytes);
 		}
 		
+		//prim  key elements to head of list
+		traversedPath = primKey.movePrimKeyToHead(traversedPath);
+		
+		primKey.getRowKeyElementCount();
+		
 		//row key
 		List<byte[]> byteArrList = new ArrayList<byte[]>();
-		for (int i =0; i < rowKeyCompCount; ++i) {
+		for (int i =0; i < primKey.getRowKeyElementCount(); ++i) {
 			byteArrList.add((byte[])traversedPath.get(i).getValue());
 		}
-		rowKey = ByteBuffer.wrap(Util.makeComposite(byteArrList));
+		rowKey = ByteBuffer.wrap(Util.encodeComposite(byteArrList));
 
 		//column prefix
 		byteArrList.clear();
-		for (int i = rowKeyCompCount; i < primKeyCompnentCount; ++i) {
+		for (int i = primKey.getRowKeyElementCount(); i < primKey.getPrimKeyElementCount(); ++i) {
 			byteArrList.add((byte[])traversedPath.get(i).getValue());
 		}
 		
 		//columns
 		ColumnValue colValue = null;
 		ByteBuffer col; 
-		for (int i = primKeyCompnentCount; i < traversedPath.size(); ++i) {
+		for (int i = primKey.getPrimKeyElementCount(); i < traversedPath.size(); ++i) {
 			colValue = new ColumnValue();
 			
 			//name
 			bytes = Util.getBytesFromObject(traversedPath.get(i).getName());
 			byteArrList.add(bytes);
-			col = ByteBuffer.wrap(Util.serializeComposite(byteArrList));
+			col = ByteBuffer.wrap(Util.encodeComposite(byteArrList));
 			colValue.setName(col);
 			
 			//value 

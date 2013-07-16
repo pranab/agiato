@@ -440,7 +440,7 @@ public class Util {
      * @param bytesList
      * @return
      */
-    public static  byte[] serializeComposite(List<byte[]> bytesList){
+    public static  byte[] encodeComposite(List<byte[]> bytesList){
     	byte[] encBytes;
     	if (bytesList.size() == 1) {
     		encBytes = bytesList.get(0);
@@ -469,7 +469,7 @@ public class Util {
      * @param encBytes
      * @return
      */
-    public static  List<byte[]>  deserializeComposite(byte[] encBytes) {
+    public static  List<byte[]>  dcodeComposite(byte[] encBytes) {
     	List<byte[]> bytesList = new ArrayList<byte[]>();
     	int cur = 0;
     	int elemLen = 0;

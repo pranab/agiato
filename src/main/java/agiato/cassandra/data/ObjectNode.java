@@ -45,7 +45,7 @@ public class ObjectNode extends NamedObject {
 		int i = 0;
 		ObjectNode parent;
 		for (ObjectNode child : listChild) {
-			parent = new ObjectNode("" + i);
+			parent = new ObjectNode("[" + i + "]");
 			addChild(parent);
 			parent.addChild(child);
 			++i;
@@ -55,7 +55,7 @@ public class ObjectNode extends NamedObject {
 	public void addMapChild(Map<String, ObjectNode> mapChild) {
 		ObjectNode parent;
 		for (String key : mapChild.keySet()) {
-			parent = new ObjectNode(key);
+			parent = new ObjectNode("{" + key + "}");
 			addChild(parent);
 			parent.addChild(mapChild.get(key));
 		}
