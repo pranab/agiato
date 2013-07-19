@@ -17,10 +17,18 @@
 
 package agiato.cassandra.data;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+
+import org.codehaus.jackson.JsonParseException;
+import org.codehaus.jackson.map.JsonMappingException;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.type.TypeReference;
 
 
 /**
@@ -45,12 +53,28 @@ public class ObjectSerDes {
 	/**
 	 * @param root
 	 * @return
+	 * @throws IOException 
+	 * @throws JsonMappingException 
+	 * @throws JsonParseException 
 	 */
-	public  List<NamedObject> deconstruct(ObjectNode root) {
+	public  List<NamedObject> deconstruct(Object root) throws Exception {
 		traversedPath = new ArrayList<NamedObject>();
-		depthFirstTraverse( root, new ArrayList<ObjectNode>(), traversedPath);
+		if (root instanceof ObjectNode) {
+			//object node
+			depthFirstTraverse( (ObjectNode)root, new ArrayList<ObjectNode>(), traversedPath);
+		} else if (root instanceof SimpleDynaBean) {
+			//simple dynamic bean
+			depthFirstTraverse(((SimpleDynaBean)root).getMap(), new ArrayList<String>(), traversedPath, false);
+		} else if (root instanceof String) {
+			//JSON string
+			ObjectMapper mapper = new ObjectMapper();
+			InputStream is = new ByteArrayInputStream(((String)root).getBytes());
+			Map<String, Object> map = mapper.readValue(is, new TypeReference<Map<String, Object>>() {});
+			depthFirstTraverse(map, new ArrayList<String>(), traversedPath, true);
+		}
 		return traversedPath;
 	}
+	
 	
 	/**
 	 * @param node
@@ -65,7 +89,7 @@ public class ObjectSerDes {
 			}
 			rootPath.remove(rootPath.size() - 1);
 		} else {
-			String prefix = getNamePrefix(rootPath);
+			String prefix = getNamePrefixObjectNode(rootPath);
 			String name = prefix.length() == 0 ? node.getName() : prefix + node.getName();
 			NamedObject nObj = new NamedObject(name, node.getValue() );
 			traversedPath.add(nObj);
@@ -76,7 +100,7 @@ public class ObjectSerDes {
 	 * @param rootPath
 	 * @return
 	 */
-	private String getNamePrefix(List<ObjectNode> rootPath) {
+	private String getNamePrefixObjectNode(List<ObjectNode> rootPath) {
 		boolean first = true;
 		String prefix = "";
 		for (ObjectNode obj : rootPath) {
@@ -88,6 +112,80 @@ public class ObjectSerDes {
 		}
 		return prefix;
 	}
+	
+	/**
+	 * @param node
+	 * @param rootPath
+	 * @param traversedPath
+	 * @param realMap
+	 */
+	private void depthFirstTraverse(Map<String, Object> node, List<String> rootPath, 
+			List<NamedObject> traversedPath, boolean realMap) {
+		for (String key : node.keySet()) {
+			Object obj = node.get(key);
+			if (obj instanceof Map<?,?>) {
+				addToRootPath(rootPath,  key,  realMap);
+				depthFirstTraverse((Map<String, Object>)obj, rootPath,  traversedPath, true);
+				rootPath.remove(rootPath.size() - 1);
+			} else if (obj instanceof SimpleDynaBean) { 
+				addToRootPath(rootPath,  key,  realMap);
+				depthFirstTraverse(((SimpleDynaBean)obj).getMap(), rootPath,  traversedPath, false);
+				rootPath.remove(rootPath.size() - 1);
+			} else if (obj instanceof List<?>) {
+				addToRootPath(rootPath,  key,  realMap);
+				List<?> listObj  = (List<?>)obj;
+				int i = 0;
+				for (Object child : listObj) {
+					rootPath.add("[" + i + "]");
+					if (child instanceof Map<?,?>) {
+						depthFirstTraverse((Map<String, Object>)child, rootPath,  traversedPath, true);
+					} else if (child  instanceof SimpleDynaBean) { 
+						depthFirstTraverse(((SimpleDynaBean)child).getMap(), rootPath,  traversedPath, false);
+					} else {
+						String name = getNamePrefixMap(rootPath);
+						NamedObject nObj = new NamedObject(name, obj );
+						traversedPath.add(nObj);
+					}
+					rootPath.remove(rootPath.size() - 1);
+					++i;
+				}
+				rootPath.remove(rootPath.size() - 1);
+			} else {
+				String prefix = getNamePrefixMap(rootPath);
+				String modKey = realMap ? "{ " + key + "}" : key;
+				String name = prefix.length() == 0 ? modKey : prefix + modKey;
+				NamedObject nObj = new NamedObject(name, obj );
+				traversedPath.add(nObj);
+			}
+		}
+	}
+
+	/**
+	 * @param rootPath
+	 * @param key
+	 * @param realMap
+	 */
+	private void addToRootPath(List<String> rootPath, String key, boolean realMap) {
+		if (realMap) {
+			rootPath.add("{" + key + "}");
+		} else {
+			rootPath.add(key);
+		}
+	}
+	
+	/**
+	 * @param rootPath
+	 * @return
+	 */
+	private String getNamePrefixMap(List<String> rootPath) {
+		boolean first = true;
+		String prefix = "";
+		for (String path  : rootPath) {
+				prefix = prefix + path + ".";
+		}
+		return prefix;
+	}
+	
 	
 	/**
 	 * @throws IOException

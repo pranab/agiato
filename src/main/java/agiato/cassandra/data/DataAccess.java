@@ -826,7 +826,7 @@ public class DataAccess {
      * @param consLevel
      * @throws Exception
      */
-    public   void  updateObject(ObjectNode obj, PrimaryKey primKey, ConsistencyLevel consLevel) throws Exception {
+    public   void  updateObject(Object obj, PrimaryKey primKey, ConsistencyLevel consLevel) throws Exception {
     	ObjectSerDes serDes = new ObjectSerDes(primKey);
     	serDes.deconstruct(obj);
     	serDes.serialize();
