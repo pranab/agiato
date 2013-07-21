@@ -22,16 +22,23 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- *
+ * Row with standard columns
  * @author pranab
  */
 public class SimpleRow extends BaseRow {
     private List<ColumnValue> colValues = new ArrayList<ColumnValue>();
     
+    /**
+     * 
+     */
     public SimpleRow() {
     	super();
     }
     
+    /**
+     * @param key
+     * @param colValues
+     */
     public SimpleRow(ByteBuffer key,  List<ColumnValue> colValues) {
     	super(key);
     	this.colValues = colValues;

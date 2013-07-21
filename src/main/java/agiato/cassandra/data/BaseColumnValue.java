@@ -21,7 +21,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 
 /**
- *
+ * Base class for column value
  * @author pranab
  */
 public class BaseColumnValue {
@@ -38,6 +38,10 @@ public class BaseColumnValue {
         return Util.getStringFromByteBuffer(name);
     }
 
+    /**
+     * @return
+     * @throws IOException
+     */
     public long getNameAsLong() throws IOException {
         return Util.getLongFromByteBuffer(name);
     }
@@ -49,10 +53,18 @@ public class BaseColumnValue {
         this.name = name;
     }
 
+    /**
+     * @param name
+     * @throws IOException
+     */
     public void setNameFromString(String name) throws IOException {
         this.name = Util.getByteBufferFromString(name) ;
     }
 
+    /**
+     * @param name
+     * @throws IOException
+     */
     public void setNameFromLong(long name) throws IOException {
         this.name = Util.getByteBufferFromLong(name);
     }

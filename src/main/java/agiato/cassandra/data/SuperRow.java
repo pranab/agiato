@@ -22,16 +22,23 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- *
+ * Row with super columns
  * @author pranab
  */
 public class SuperRow extends BaseRow {
     private List<SuperColumnValue> superColValues = new ArrayList<SuperColumnValue>();
 
+    /**
+     * 
+     */
     public SuperRow() {
     	super();
     }
     
+    /**
+     * @param key
+     * @param superColValues
+     */
     public SuperRow(ByteBuffer key,  List<SuperColumnValue> superColValues) {
     	super(key);
     	this.superColValues = superColValues;

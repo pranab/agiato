@@ -18,40 +18,67 @@
 package agiato.cassandra.data;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
- * Primary key
+ * Primary key meta data
  * @author pranab
  *
  */
 public class PrimaryKey {
 	private List<String> prmKeyElements;
 	private int primKeyElementCount;
-	private int rowKeyElementCount;
+	private int rowKeyElementCount = 1;
 	
+	/**
+	 * @param prmKeyElements
+	 */
+	public PrimaryKey(String... prmKeyElements ) {
+		this.prmKeyElements = Arrays.asList(prmKeyElements);
+	}
+	
+	/**
+	 * @param prmKeyElements
+	 * @param rowKeyElementCount
+	 */
 	public PrimaryKey(List<String> prmKeyElements, int rowKeyElementCount) {
-		super();
 		this.prmKeyElements = prmKeyElements;
 		this.rowKeyElementCount = rowKeyElementCount;
 	}
 	
+	/**
+	 * @param primKeyElementCount
+	 * @param rowKeyElementCount
+	 */
 	public PrimaryKey( int primKeyElementCount, int rowKeyElementCount) {
-		super();
 		this.primKeyElementCount = primKeyElementCount;
 		this.rowKeyElementCount = rowKeyElementCount;
 	}
 	
+	/**
+	 * @return
+	 */
 	public List<String> getPrmKeyElements() {
 		return prmKeyElements;
 	}
 
+	/**
+	 * @return
+	 */
 	public int getPrimKeyElementCount() {
 		return primKeyElementCount;
 	}
 
+	/**
+	 * @return
+	 */
 	public int getRowKeyElementCount() {
 		return rowKeyElementCount;
+	}
+
+	public void setRowKeyElementCount(int rowKeyElementCount) {
+		this.rowKeyElementCount = rowKeyElementCount;
 	}
 
 	/**

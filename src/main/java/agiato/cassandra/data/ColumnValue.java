@@ -22,27 +22,56 @@ import java.nio.ByteBuffer;
 
 
 /**
- *
+ *	Holds column name and value
  * @author pranab
  */
 public class ColumnValue  extends BaseColumnValue{
      private ByteBuffer value = Util.getEmptyByteBuffer();
 
+    /**
+     * @param name
+     * @param value
+     * @throws IOException
+     */
     public void write(String name, String value) throws IOException{
         this.name = Util.getByteBufferFromString(name) ;
         this.value = Util.getByteBufferFromString(value) ;
     }
 
+    /**
+     * @param name
+     * @param value
+     * @throws IOException
+     */
     public void write(String name, long value) throws IOException{
         this.name = Util.getByteBufferFromString(name) ;
         this.value = Util.getByteBufferFromLong(value);
     }
 
+    /**
+     * @param name
+     * @param value
+     * @throws IOException
+     */
     public void write(String name, double value) throws IOException{
         this.name = Util.getByteBufferFromString(name) ;
         this.value = Util.getByteBufferFromDouble(value);
     }
 
+    /**
+     * @param name
+     * @param value
+     * @throws IOException
+     */
+    public void write(Object name, Object value) throws IOException{
+        this.name = Util.getByteBufferFromObject(name) ;
+        this.value = Util.getByteBufferFromObject(value);
+    }
+
+    /**
+     * @return
+     * @throws IOException
+     */
     public String[] read() throws IOException{
         String[] nameValue = new String[2];
         nameValue[0] = Util.getStringFromByteBuffer(name);
@@ -57,14 +86,26 @@ public class ColumnValue  extends BaseColumnValue{
         return value;
     }
 
+    /**
+     * @return
+     * @throws IOException
+     */
     public String getValueAsString()  throws IOException {
         return Util.getStringFromByteBuffer(value);
     }
 
+    /**
+     * @return
+     * @throws IOException
+     */
     public long getValueAsLong() throws IOException {
         return Util.getLongFromByteBuffer(value);
     }
 
+    /**
+     * @return
+     * @throws IOException
+     */
     public double getValueAsDouble() throws IOException {
         return Util.getDoubleFromByteBuffer(value);
     }
@@ -76,11 +117,19 @@ public class ColumnValue  extends BaseColumnValue{
         this.value = value;
     }
 
-     public void setValueFromString(String value) throws IOException {
+     /**
+     * @param value
+     * @throws IOException
+     */
+    public void setValueFromString(String value) throws IOException {
         this.value = Util.getByteBufferFromString(value);
     }
 
 
+    /**
+     * @param value
+     * @throws IOException
+     */
     public void setValueFromLong(long value) throws IOException {
         this.value = Util.getByteBufferFromLong(value);
     }

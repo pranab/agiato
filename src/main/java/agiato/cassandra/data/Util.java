@@ -436,6 +436,15 @@ public class Util {
     }
     
     /**
+     * @param obj
+     * @return
+     * @throws IOException
+     */
+    public static  ByteBuffer getByteBufferFromObject(Object obj) throws IOException {
+        return ByteBuffer.wrap(getBytesFromObject(obj));
+    }
+    
+    /**
      * makes composite column name or row key
      * @param bytesList
      * @return

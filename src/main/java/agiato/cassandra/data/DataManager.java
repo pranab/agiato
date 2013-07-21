@@ -43,6 +43,12 @@ public class DataManager {
     private LoadBalancer loadBalancer;
     private static DataManager dataManager;
     
+    /**
+     * @param configFile
+     * @param forceCreateKeySpace
+     * @return
+     * @throws Exception
+     */
     public static synchronized DataManager initialize(String configFile, boolean forceCreateKeySpace) throws Exception{
         if (null == dataManager){
             dataManager = new DataManager(configFile, forceCreateKeySpace);
@@ -51,10 +57,18 @@ public class DataManager {
     }
     
     
+    /**
+     * @return
+     */
     public static DataManager instance(){
         return dataManager;
     }
             
+    /**
+     * @param configFile
+     * @param forceCreateKeySpace
+     * @throws Exception
+     */
     public DataManager(String configFile, boolean forceCreateKeySpace) throws Exception{
         MetaDataManager.initialize(configFile);
         MetaDataManager metaDatamanager = MetaDataManager.instance();
@@ -176,26 +190,47 @@ public class DataManager {
 
     }
     
+    /**
+     * @return
+     * @throws Exception
+     */
     public Connector  borrowConnection() throws Exception{
         HostConnections hostConns = loadBalancer.select();
         return (Connector)hostConns.getConnectionPool().borrowObject();
     }
     
+    /**
+     * @param connectionPool
+     * @return
+     * @throws Exception
+     */
     public Connector  borrowConnection(GenericObjectPool connectionPool) throws Exception{
         return (Connector)connectionPool.borrowObject();
     }
 
+    /**
+     * @param connectionPool
+     * @param connector
+     * @throws Exception
+     */
     public void returnConnection(GenericObjectPool connectionPool, Connector connector) 
         throws Exception{
         connectionPool.returnObject(connector);
     }
     
+    /**
+     * @param connector
+     * @throws Exception
+     */
     public void returnConnection(Connector connector) 
         throws Exception{
         GenericObjectPool connectionPool = loadBalancer.findConnectionPool(connector.getHost());
         connectionPool.returnObject(connector);
     }
 
+    /**
+     * @return
+     */
     public GenericObjectPool getConnectionPool(){
         return loadBalancer.select().getConnectionPool();
     }

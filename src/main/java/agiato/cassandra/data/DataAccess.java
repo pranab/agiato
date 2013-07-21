@@ -17,6 +17,7 @@
 
 package agiato.cassandra.data;
 
+import agiato.cassandra.api.ColumnFamilyWriter;
 import agiato.cassandra.connect.Connector;
 
 import java.io.IOException;
@@ -45,7 +46,7 @@ import org.apache.commons.pool.impl.GenericObjectPool;
  * Data  read write accessor
  * @author pranab
  */
-public class DataAccess {
+public class DataAccess  implements ColumnFamilyWriter {
     private String colFamilly;
     private DataManager dataManager  = DataManager.instance();
 
@@ -748,7 +749,7 @@ public class DataAccess {
      * @param consLevel
      * @throws Exception
      */
-    public   void  insertObject(ObjectNode obj, PrimaryKey primKey,  ConsistencyLevel consLevel) throws Exception {
+    public   void  insertObject(Object obj, PrimaryKey primKey,  ConsistencyLevel consLevel) throws Exception {
     	updateObject( obj,  primKey, consLevel);
     }
     
@@ -790,32 +791,69 @@ public class DataAccess {
 
         try{
             long timestamp = System.currentTimeMillis();
-
             Map<ByteBuffer, Map<String, List<Mutation>>> job = new HashMap<ByteBuffer, Map<String, List<Mutation>>>();
-            List<Mutation> mutations = new ArrayList<Mutation>();
-
-            List<Column> columns = new ArrayList<Column>();
-            for (ColumnValue colVal : colVals){
-                Column col = new Column(colVal.getName());
-                col.setValue(colVal.getValue());
-                col.setTimestamp(timestamp);
-                
-                ColumnOrSuperColumn columnOrSuperColumn = new ColumnOrSuperColumn();
-                columnOrSuperColumn.setColumn(col);
-                Mutation mutation = new Mutation();
-                mutation.setColumn_or_supercolumn(columnOrSuperColumn);
-                mutations.add(mutation);
-            }
-
-            Map<String, List<Mutation>> mutationsForColumnFamily = new HashMap<String, List<Mutation>>();
-            mutationsForColumnFamily.put(colFamilly, mutations);
-
-            job.put(rowKey, mutationsForColumnFamily);
+        	Map<String, List<Mutation>> mutationsColFam =  getColumnMutations(colVals,  timestamp);
+            job.put(rowKey, mutationsColFam);
             client.batch_mutate(job, consLevel);
         } finally {
             dataManager.returnConnection(connector);
         }
         
+    }
+    
+    /**
+     * @param colVals
+     * @param timestamp
+     * @return
+     */
+    private Map<String, List<Mutation>> getColumnMutations(List<ColumnValue> colVals, long timestamp) {
+        Map<String, List<Mutation>> mutationsColFam = new HashMap<String, List<Mutation>>();
+        
+        List<Mutation> mutations = new ArrayList<Mutation>();
+        for (ColumnValue colVal : colVals){
+            Column col = new Column(colVal.getName());
+            col.setValue(colVal.getValue());
+            col.setTimestamp(timestamp);
+            
+            ColumnOrSuperColumn columnOrSuperColumn = new ColumnOrSuperColumn();
+            columnOrSuperColumn.setColumn(col);
+            Mutation mutation = new Mutation();
+            mutation.setColumn_or_supercolumn(columnOrSuperColumn);
+            mutations.add(mutation);
+        }
+        mutationsColFam.put(colFamilly, mutations);
+        return mutationsColFam;
+    }
+    
+    /**
+     * @param row
+     * @param consLevel
+     * @throws Exception
+     */
+    public void writeRow(SimpleRow row, ConsistencyLevel consLevel) throws Exception {
+    	updateColumns(row.getKey(),  row.getColValues(),  consLevel);
+    }
+
+    /**
+     * @param rows
+     * @param consLevel
+     * @throws Exception
+     */
+    public void writeRows(List<SimpleRow> rows, ConsistencyLevel consLevel) throws Exception {
+        Connector connector = dataManager.borrowConnection();
+        Cassandra.Client client = connector.openConnection();
+    	
+        try{
+            long timestamp = System.currentTimeMillis();
+            Map<ByteBuffer, Map<String, List<Mutation>>> job = new HashMap<ByteBuffer, Map<String, List<Mutation>>>();
+            for (SimpleRow row :  rows) {
+            	Map<String, List<Mutation>> mutationsColFam =  getColumnMutations(row.getColValues(),  timestamp);
+                job.put(row.getKey(), mutationsColFam);
+            }
+            client.batch_mutate(job, consLevel);
+        } finally {
+            dataManager.returnConnection(connector);
+        }
     }
     
     /**
@@ -832,6 +870,59 @@ public class DataAccess {
     	serDes.serialize();
     	updateColumns(serDes.getRowKey(), serDes.getColValues(),  consLevel);
 	}
+
+    /**
+     * @param objs
+     * @param primKey
+     * @param consLevel
+     * @throws Exception
+     */
+    public   void  updateObjects(List<Object> objs, PrimaryKey primKey, ConsistencyLevel consLevel) throws Exception {
+    	ObjectSerDes serDes = new ObjectSerDes(primKey);
+    	Map<ByteBuffer, List<ColumnValue>> serObjects = new HashMap<ByteBuffer, List<ColumnValue>>();
+    	
+    	//serialize and collect by row keys
+    	for (Object obj : objs) {
+    		serDes.deconstruct(obj);
+    		serDes.serialize();
+    		List<ColumnValue> cols = serObjects.get(serDes.getRowKey());
+    		if (null == cols) {
+    			cols = new ArrayList<ColumnValue>();
+    			serObjects.put(serDes.getRowKey(), cols);
+    		}
+    		cols.addAll(serDes.getColValues());
+    	}
+    	
+    	//write all rows
+    	List<SimpleRow> rows = new ArrayList<SimpleRow>();
+    	for (ByteBuffer key :  serObjects.keySet()) {
+    		List<ColumnValue> cols = serObjects.get(key);
+    		SimpleRow row = new SimpleRow(key, cols);
+    		rows.add(row);
+    	} 
+    	writeRows(rows,  consLevel);
+	}
+
+    
+    /**
+     * @param obj
+     * @param primKey
+     * @param consLevel
+     * @throws Exception
+     */
+    public   void  writeObject(Object obj, PrimaryKey primKey, ConsistencyLevel consLevel) throws Exception {
+    	updateObject(obj,  primKey,  consLevel);
+    }    
+    
+    /**
+     * @param objs
+     * @param primKey
+     * @param consLevel
+     * @throws Exception
+     */
+    public   void  writeObjects(List<Object> objs, PrimaryKey primKey, ConsistencyLevel consLevel) throws Exception {
+    	updateObjects(objs, primKey, consLevel);
+    }
     
     /**
      * returns list of standard columns
