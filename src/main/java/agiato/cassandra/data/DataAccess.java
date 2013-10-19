@@ -872,6 +872,23 @@ public class DataAccess  implements ColumnFamilyWriter {
 	}
 
     /**
+     * @param obj
+     * @param primKey
+     * @param consLevel
+     * @throws Exception
+     */
+    public   List<Object>  retrieveObject(Object obj, PrimaryKey primKey, ConsistencyLevel consLevel) throws Exception {
+    	ObjectSerDes serDes = new ObjectSerDes(primKey);
+    	serDes.deconstruct(obj);
+    	serDes.serializePrimKey();
+    	
+    	 List<ColumnValue> colValues = retrieveSubColumns(serDes.getRowKey(),  null,  serDes.getColumnRange(), true, -1,  consLevel);	
+    	 List<Object> retrieved = new ArrayList<Object>();
+    	 return retrieved;
+    }
+    
+    
+    /**
      * @param objs
      * @param primKey
      * @param consLevel

@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -41,6 +42,8 @@ public class ObjectSerDes {
 	private List<NamedObject> traversedPath;
 	private ByteBuffer rowKey;
 	private List<ColumnValue> colValues;
+	private boolean partialClusterKey;
+	private ByteBuffer clusterKey;
 
 	/*
 	 * @param primKey
@@ -193,33 +196,28 @@ public class ObjectSerDes {
 	public void serialize() throws IOException {
 		colValues = new ArrayList<ColumnValue>();
 		
-		//column values
-		byte[] bytes = null;
-		for (NamedObject obj : traversedPath) {
-			Object val = obj.getValue();
-			bytes = Util.getBytesFromObject(val);
-			obj.setValue(bytes);
-		}
-		
+		//serialize column values
+		serializeColumnValues();
+
 		//prim  key elements to head of list
 		traversedPath = primKey.movePrimKeyToHead(traversedPath);
 		
-		primKey.getRowKeyElementCount();
-		
 		//row key
-		List<byte[]> byteArrList = new ArrayList<byte[]>();
-		for (int i =0; i < primKey.getRowKeyElementCount(); ++i) {
-			byteArrList.add((byte[])traversedPath.get(i).getValue());
+		serializeRowKey();
+		
+		//make sure all prim key components are provided
+		if (!primKey.allPrimKeyComponentsDefined()) {
+			throw new IllegalArgumentException("all primary key componets not provided");
 		}
-		rowKey = ByteBuffer.wrap(Util.encodeComposite(byteArrList));
-
+		
 		//column prefix
-		byteArrList.clear();
+		List<byte[]> byteArrList = new ArrayList<byte[]>();
 		for (int i = primKey.getRowKeyElementCount(); i < primKey.getPrimKeyElementCount(); ++i) {
 			byteArrList.add((byte[])traversedPath.get(i).getValue());
 		}
 		
 		//columns
+		byte[] bytes = null;
 		ColumnValue colValue = null;
 		ByteBuffer col; 
 		for (int i = primKey.getPrimKeyElementCount(); i < traversedPath.size(); ++i) {
@@ -239,7 +237,89 @@ public class ObjectSerDes {
 			byteArrList.remove(bytes);
 		}
 	}
+	
+	/**
+	 * @throws IOException
+	 */
+	public void serializePrimKey() throws IOException {
+		//serialize column values
+		serializeColumnValues();
 
+		//prim  key elements to head of list
+		traversedPath = primKey.movePrimKeyToHead(traversedPath);
+		
+		//row key
+		serializeRowKey();
+
+		//cluster key
+		List<byte[]> byteArrList = new ArrayList<byte[]>();
+		for (int i = primKey.getRowKeyElementCount(); i < primKey.getNumPrimKeyComponentsFound(); ++i) {
+			byteArrList.add((byte[])traversedPath.get(i).getValue());
+		}
+		clusterKey = ByteBuffer.wrap(Util.encodeComposite(byteArrList));
+	}
+
+	/**
+	 * return column key range corresponding to cluster key
+	 * @return
+	 */
+	public List<ByteBuffer> getColumnRange() {
+		List<ByteBuffer> colRange = new ArrayList<ByteBuffer>();
+		
+		byte[] startBytes  = new byte[clusterKey.remaining()];
+		clusterKey.get(startBytes);
+		byte[] endBytes = Arrays.copyOf(startBytes, startBytes.length);
+		endBytes[endBytes.length-1] = 1;
+		ByteBuffer endBuffer = ByteBuffer.wrap(endBytes);
+		colRange.add(clusterKey);
+		colRange.add(endBuffer);
+		
+		return colRange;
+	}
+	
+	/**
+	 * @throws IOException
+	 */
+	private void serializeColumnValues() throws IOException {
+		byte[] bytes = null;
+		for (NamedObject obj : traversedPath) {
+			Object val = obj.getValue();
+			if (null != val) {
+				bytes =  Util.getBytesFromObject(val);
+				obj.setValue(bytes);
+			}
+		}
+	}
+	
+	/**
+	 * serialize row key 
+	 */
+	private void serializeRowKey() {
+		List<byte[]> byteArrList = new ArrayList<byte[]>();
+		for (int i =0; i < primKey.getRowKeyElementCount(); ++i) {
+			byteArrList.add((byte[])traversedPath.get(i).getValue());
+		}
+		rowKey = ByteBuffer.wrap(Util.encodeComposite(byteArrList));
+	}
+
+	/**
+	 * 
+	 */
+	private void serializeClusterKey() {
+		partialClusterKey = false;
+		List<byte[]> byteArrList = new ArrayList<byte[]>();
+		for (int i = primKey.getRowKeyElementCount(); i < primKey.getPrimKeyElementCount(); ++i) {
+			if (null != traversedPath.get(i).getValue()) {
+				byteArrList.add((byte[])traversedPath.get(i).getValue());
+			} else {
+				partialClusterKey = true;
+				break;
+			}
+		}
+		
+	}
+	
+	
 	/**
 	 * @return
 	 */

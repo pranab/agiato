@@ -30,11 +30,13 @@ public class PrimaryKey {
 	private List<String> prmKeyElements;
 	private int primKeyElementCount;
 	private int rowKeyElementCount = 1;
+	private int numPrimKeyComponentsFound;
 	
 	/**
 	 * @param prmKeyElements
 	 */
 	public PrimaryKey(String... prmKeyElements ) {
+		//primary keys could be anywhere in the traversed tree with only one row key component
 		this.prmKeyElements = Arrays.asList(prmKeyElements);
 	}
 	
@@ -43,6 +45,7 @@ public class PrimaryKey {
 	 * @param rowKeyElementCount
 	 */
 	public PrimaryKey(List<String> prmKeyElements, int rowKeyElementCount) {
+		//primary keys could be anywhere in the traversed tree
 		this.prmKeyElements = prmKeyElements;
 		this.rowKeyElementCount = rowKeyElementCount;
 	}
@@ -52,6 +55,7 @@ public class PrimaryKey {
 	 * @param rowKeyElementCount
 	 */
 	public PrimaryKey( int primKeyElementCount, int rowKeyElementCount) {
+		//primary keys in the head of the traversed tree
 		this.primKeyElementCount = primKeyElementCount;
 		this.rowKeyElementCount = rowKeyElementCount;
 	}
@@ -88,26 +92,45 @@ public class PrimaryKey {
 	 */
 	public List<NamedObject> movePrimKeyToHead(List<NamedObject> traversedPath) {
 		List<NamedObject> newTraversedPath = null;
+		numPrimKeyComponentsFound = 0;
 		if (primKeyElementCount > 0) {
+			//primary key components are at the head of the traversed list 
 			newTraversedPath = traversedPath;
+			numPrimKeyComponentsFound = primKeyElementCount;
 		} else {
 			List<NamedObject> head = new ArrayList<NamedObject>(prmKeyElements.size());
 			List<NamedObject> tail = new ArrayList<NamedObject>();
 			
-			//separate prim and non prim
+			//separate primary key and non primary key fields
 			for (NamedObject obj :  traversedPath) {
 				boolean matched = false;
 				for (int i = 0; i < prmKeyElements.size(); ++i) {
 					if (prmKeyElements.get(i).equals(obj.getName())) {
 						head.set(i, obj);
 						matched = true;
+						++numPrimKeyComponentsFound;
 						break;
 					}
 				}
 				
 				if (!matched) {
+					//non primary key
 					tail.add(obj);
 				}
+			}
+			
+			//check if there is gap in primary key components
+			for (int i = 0; i  < head.size(); ++i) {
+				if (null == head.get(i)) {
+					throw new IllegalArgumentException("primary key subset provided is not contiguous");
+				}
+			}
+			
+			//make sure all row key component elements are provided
+			if (numPrimKeyComponentsFound < rowKeyElementCount) {
+				throw new IllegalArgumentException("primary key does not contain all the row key components" +
+						"numPrimKeyComponentsFound:" + numPrimKeyComponentsFound + 
+						" rowKeyElementCount: " +rowKeyElementCount );
 			}
 			
 			//put them together
@@ -116,5 +139,26 @@ public class PrimaryKey {
 			primKeyElementCount = prmKeyElements.size();
 		}
 		return newTraversedPath;
+	}
+	
+	/**
+	 * @return
+	 */
+	public boolean allRowKeyComponentsDefined() {
+		return numPrimKeyComponentsFound >= rowKeyElementCount;
+	}
+	
+	/**
+	 * @return
+	 */
+	public boolean allPrimKeyComponentsDefined() {
+		return numPrimKeyComponentsFound == primKeyElementCount;
+	}
+
+	/**
+	 * @return
+	 */
+	public int getNumPrimKeyComponentsFound() {
+		return numPrimKeyComponentsFound;
 	}
 }
