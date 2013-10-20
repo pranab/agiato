@@ -883,7 +883,7 @@ public class DataAccess  implements ColumnFamilyWriter {
     	serDes.serializePrimKey();
     	
     	 List<ColumnValue> colValues = retrieveSubColumns(serDes.getRowKey(),  null,  serDes.getColumnRange(), true, -1,  consLevel);	
-    	 List<Object> retrieved = new ArrayList<Object>();
+    	 List<Object> retrieved = serDes.construct(obj, colValues);
     	 return retrieved;
     }
     

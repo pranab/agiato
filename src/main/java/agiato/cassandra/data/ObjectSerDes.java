@@ -20,9 +20,11 @@ package agiato.cassandra.data;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -44,7 +46,9 @@ public class ObjectSerDes {
 	private List<ColumnValue> colValues;
 	private boolean partialClusterKey;
 	private ByteBuffer clusterKey;
-
+	private Map<List<BigInteger>, Object> dataObjects = new HashMap<List<BigInteger>, Object>();
+	private List<byte[]> rowKeyByteArrList = new ArrayList<byte[]>();
+	
 	/*
 	 * @param primKey
 	 */
@@ -295,11 +299,11 @@ public class ObjectSerDes {
 	 * serialize row key 
 	 */
 	private void serializeRowKey() {
-		List<byte[]> byteArrList = new ArrayList<byte[]>();
+		rowKeyByteArrList.clear();
 		for (int i =0; i < primKey.getRowKeyElementCount(); ++i) {
-			byteArrList.add((byte[])traversedPath.get(i).getValue());
+			rowKeyByteArrList.add((byte[])traversedPath.get(i).getValue());
 		}
-		rowKey = ByteBuffer.wrap(Util.encodeComposite(byteArrList));
+		rowKey = ByteBuffer.wrap(Util.encodeComposite(rowKeyByteArrList));
 	}
 
 	/**
@@ -316,7 +320,6 @@ public class ObjectSerDes {
 				break;
 			}
 		}
-		
 	}
 	
 	
@@ -362,4 +365,90 @@ public class ObjectSerDes {
 		this.colValues = colValues;
 	}
 
+	/**
+	 * @param proto
+	 * @param colValues
+	 * @return
+	 * @throws IOException 
+	 */
+	public List<Object> construct(Object proto, List<ColumnValue> colValues) throws IOException {
+		List<Object> values = new ArrayList<Object>();
+		if (proto instanceof ObjectNode)  {
+			for (ColumnValue colVal :  colValues) {
+				//cluster key
+				ByteBuffer colName = colVal.getName();
+				List<byte[]> colNameComponents = Util.dcodeComposite(colName.array());
+				String  nonPrimKeyColName = Util.getStringFromBytes(colNameComponents.remove(colNameComponents.size()-1));
+				
+				//data object for this cluster key
+				List<BigInteger>  clutserKey = toBigIntList(colNameComponents);
+				ObjectNode dataObj  = (ObjectNode)dataObjects.get(clutserKey);
+				if (null == dataObj) {
+					//create and initialize 
+					dataObj = new  ObjectNode("");
+					
+					//populate row key values
+					for (int i =0; i < primKey.getRowKeyElementCount(); ++i) {
+						String rowKeyName = primKey.getPrmKeyElements().get(i);
+						List<String> rowKeyComponents =getKeyComponents(rowKeyName);
+						buildObject(dataObj, rowKeyComponents,  rowKeyByteArrList.get(i));
+					}
+					
+					//populate cluster key values
+					for (int i =  primKey.getRowKeyElementCount(), j = 0; i < primKey.getPrimKeyElementCount() ;++i, ++j) {
+						String clusterKeyName = primKey.getPrmKeyElements().get(i);
+						List<String> clusterKeyComponents =getKeyComponents(clusterKeyName);
+						buildObject(dataObj, clusterKeyComponents,  colNameComponents.get( j ));
+					}
+					
+					//cache it
+					dataObjects.put(clutserKey, dataObj);
+				}
+				
+				//populate col value
+				List<String> colKeyComponents =getKeyComponents(nonPrimKeyColName);
+				buildObject(dataObj, colKeyComponents,  colVal.getValue().array());
+			}
+		}
+		return values;
+	}
+	
+	/**
+	 * @param keyName
+	 * @return
+	 */
+	private List<String> getKeyComponents(String keyName) {
+		String[] items = keyName.split("\\.");
+		return  Arrays.asList(items);
+	}
+	
+	/**
+	 * @param parent
+	 * @param path
+	 * @param value
+	 */
+	private void buildObject(ObjectNode parent, List<String> path, byte[] value) {
+		String pathElem = path.get(0);
+		if (path.size() == 1) {
+			ObjectNode child = new ObjectNode(pathElem, value);
+			parent.addChild(child);
+		} else {
+			ObjectNode child = new ObjectNode(pathElem);
+			parent.addChild(child);
+			path.remove(0);
+			buildObject(child,  path,  value);
+		}
+	}
+	
+	/**
+	 * @param colNameComponents
+	 * @return
+	 */
+	private List<BigInteger> toBigIntList(List<byte[]> colNameComponents) {
+		List<BigInteger> bigIntList = new ArrayList<BigInteger>();
+		for (byte[] item :  colNameComponents) {
+			bigIntList.add(new BigInteger(item));
+		}
+		return bigIntList;
+	}
 }

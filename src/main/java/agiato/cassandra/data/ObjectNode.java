@@ -52,6 +52,14 @@ public class ObjectNode extends NamedObject {
 		}
 	}
 
+	public void addListChild(ObjectNode child, int index) {
+		int i = 0;
+		ObjectNode parent  = new ObjectNode("[" + index + "]");
+		addChild(parent);
+		parent.addChild(child);
+	}
+
+	
 	public void addMapChild(Map<String, ObjectNode> mapChild) {
 		ObjectNode parent;
 		for (String key : mapChild.keySet()) {
