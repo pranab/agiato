@@ -431,14 +431,14 @@ public class ObjectSerDes {
 					for (int i =0; i < primKey.getRowKeyElementCount(); ++i) {
 						String rowKeyName = primKey.getPrmKeyElements().get(i);
 						List<String> rowKeyComponents =getKeyComponents(rowKeyName);
-						buildNestedMap(dataObj, rowKeyComponents,  rowKeyByteArrList.get(i));
+						buildNestedMap(dataObj, rowKeyComponents,  rowKeyByteArrList.get(i),0);
 					}
 					
 					//populate cluster key values
 					for (int i =  primKey.getRowKeyElementCount(), j = 0; i < primKey.getPrimKeyElementCount() ;++i, ++j) {
 						String clusterKeyName = primKey.getPrmKeyElements().get(i);
 						List<String> clusterKeyComponents =getKeyComponents(clusterKeyName);
-						buildNestedMap(dataObj, clusterKeyComponents,  colNameComponents.get( j ));
+						buildNestedMap(dataObj, clusterKeyComponents,  colNameComponents.get( j ),0);
 					}
 					//cache it
 					dataObjects.put(clutserKey, dataObj);
@@ -446,7 +446,7 @@ public class ObjectSerDes {
 				
 				//populate col value
 				List<String> colKeyComponents =getKeyComponents(nonPrimKeyColName);
-				buildNestedMap(dataObj, colKeyComponents,  colVal.getValue().array());
+				buildNestedMap(dataObj, colKeyComponents,  colVal.getValue().array(),0);
 			}
 			
 			if (proto instanceof SimpleDynaBean) {
@@ -514,15 +514,43 @@ public class ObjectSerDes {
 	 * @param path
 	 * @param value
 	 */
-	private void buildNestedMap(Map<String, Object> parent, List<String> path, byte[] value) {
-		String pathElem = path.get(0);
-		if (path.size() == 1) {
+	private void buildNestedMap(Map<String, Object> parent, List<String> path, byte[] value, int pathIndex) {
+		String pathElem = path.get(pathIndex);
+		if (pathIndex == path.size() - 1) {
+			//end of path
 			parent.put(pathElem, value);
 		} else {
-			Map<String, Object> child = new HashMap<String, Object>();
-			parent.put(pathElem, child);
-			path.remove(0);
-			buildNestedMap(child,  path,  value);
+			Object child = parent.get(pathElem);
+			String nextPathElem = path.get(pathIndex+1);
+			if(nextPathElem.startsWith("[")) {
+				List<Object> listChild = null;
+				if (null == child) {
+					//list child does not exist
+					listChild = new ArrayList<Object>();
+					parent.put(pathElem, listChild);
+				} else {
+					//list child exists
+					listChild = (List<Object>)parent.get(pathElem);
+				}
+				
+				//insert list element
+				int listIndex = Integer.parseInt(nextPathElem.substring(1, nextPathElem.length()-1));
+				child = new HashMap<String, Object>();
+				listChild.add(listIndex, child);
+				
+				pathIndex += 2;
+			} if(nextPathElem.startsWith("{")) {
+				
+			} else {
+				if (null == child) {
+					child = new HashMap<String, Object>();
+					parent.put(pathElem, child);
+				}
+				++pathIndex;
+			}
+			
+			//recursive call
+			buildNestedMap((Map<String, Object>)child,  path,  value, pathIndex);
 		}
 	}
 	
