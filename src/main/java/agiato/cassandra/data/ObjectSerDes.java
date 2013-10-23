@@ -48,6 +48,9 @@ public class ObjectSerDes {
 	private ByteBuffer clusterKey;
 	private Map<List<BigInteger>, Object> dataObjects = new HashMap<List<BigInteger>, Object>();
 	private List<byte[]> rowKeyByteArrList = new ArrayList<byte[]>();
+	private List<byte[]> colNameComponents;
+	private String   nonPrimKeyColName;
+	private List<BigInteger>  clutserKey;
 	
 	/*
 	 * @param primKey
@@ -374,14 +377,12 @@ public class ObjectSerDes {
 	public List<Object> construct(Object proto, List<ColumnValue> colValues) throws IOException {
 		List<Object> values = new ArrayList<Object>();
 		if (proto instanceof ObjectNode)  {
+			//ObjectNode
 			for (ColumnValue colVal :  colValues) {
 				//cluster key
-				ByteBuffer colName = colVal.getName();
-				List<byte[]> colNameComponents = Util.dcodeComposite(colName.array());
-				String  nonPrimKeyColName = Util.getStringFromBytes(colNameComponents.remove(colNameComponents.size()-1));
+				createClusterKey(colVal);
 				
 				//data object for this cluster key
-				List<BigInteger>  clutserKey = toBigIntList(colNameComponents);
 				ObjectNode dataObj  = (ObjectNode)dataObjects.get(clutserKey);
 				if (null == dataObj) {
 					//create and initialize 
@@ -391,14 +392,14 @@ public class ObjectSerDes {
 					for (int i =0; i < primKey.getRowKeyElementCount(); ++i) {
 						String rowKeyName = primKey.getPrmKeyElements().get(i);
 						List<String> rowKeyComponents =getKeyComponents(rowKeyName);
-						buildObject(dataObj, rowKeyComponents,  rowKeyByteArrList.get(i));
+						buildNestedObjectNode(dataObj, rowKeyComponents,  rowKeyByteArrList.get(i));
 					}
 					
 					//populate cluster key values
 					for (int i =  primKey.getRowKeyElementCount(), j = 0; i < primKey.getPrimKeyElementCount() ;++i, ++j) {
 						String clusterKeyName = primKey.getPrmKeyElements().get(i);
 						List<String> clusterKeyComponents =getKeyComponents(clusterKeyName);
-						buildObject(dataObj, clusterKeyComponents,  colNameComponents.get( j ));
+						buildNestedObjectNode(dataObj, clusterKeyComponents,  colNameComponents.get( j ));
 					}
 					
 					//cache it
@@ -407,10 +408,76 @@ public class ObjectSerDes {
 				
 				//populate col value
 				List<String> colKeyComponents =getKeyComponents(nonPrimKeyColName);
-				buildObject(dataObj, colKeyComponents,  colVal.getValue().array());
+				buildNestedObjectNode(dataObj, colKeyComponents,  colVal.getValue().array());
+			}
+			
+			//collect all the objects
+			for (List<BigInteger> primKey : dataObjects.keySet()) {
+				values.add(dataObjects.get(primKey));
+			}
+		} else   {
+			//SimpleDynaBean or JSON
+			for (ColumnValue colVal :  colValues) {
+				//cluster key
+				createClusterKey(colVal);
+				
+				//data object for this cluster key
+				Map<String, Object> dataObj  = (Map<String, Object>)dataObjects.get(clutserKey);
+				if (null == dataObj) {
+					//create and initialize 
+					dataObj = new HashMap<String, Object>();
+					
+					//populate row key values
+					for (int i =0; i < primKey.getRowKeyElementCount(); ++i) {
+						String rowKeyName = primKey.getPrmKeyElements().get(i);
+						List<String> rowKeyComponents =getKeyComponents(rowKeyName);
+						buildNestedMap(dataObj, rowKeyComponents,  rowKeyByteArrList.get(i));
+					}
+					
+					//populate cluster key values
+					for (int i =  primKey.getRowKeyElementCount(), j = 0; i < primKey.getPrimKeyElementCount() ;++i, ++j) {
+						String clusterKeyName = primKey.getPrmKeyElements().get(i);
+						List<String> clusterKeyComponents =getKeyComponents(clusterKeyName);
+						buildNestedMap(dataObj, clusterKeyComponents,  colNameComponents.get( j ));
+					}
+					//cache it
+					dataObjects.put(clutserKey, dataObj);
+				}
+				
+				//populate col value
+				List<String> colKeyComponents =getKeyComponents(nonPrimKeyColName);
+				buildNestedMap(dataObj, colKeyComponents,  colVal.getValue().array());
+			}
+			
+			if (proto instanceof SimpleDynaBean) {
+				//collect all the SimpleDynaBean objects
+				for (List<BigInteger> primKey : dataObjects.keySet()) {
+					Map<String, Object> map = (Map<String, Object>)dataObjects.get(primKey);
+					values.add(new SimpleDynaBean(map));
+				}
+			} else {
+				//collect all the JSON string objects
+				for (List<BigInteger> primKey : dataObjects.keySet()) {
+					Map<String, Object> map = (Map<String, Object>)dataObjects.get(primKey);
+					ObjectMapper mapper = new ObjectMapper();
+					String json = mapper.writeValueAsString(map);
+					values.add(json);
+				}
 			}
 		}
+		
+		
 		return values;
+	}
+	
+	private void createClusterKey(ColumnValue colVal) throws IOException {
+		//cluster key
+		ByteBuffer colName = colVal.getName();
+		colNameComponents = Util.dcodeComposite(colName.array());
+		nonPrimKeyColName = Util.getStringFromBytes(colNameComponents.remove(colNameComponents.size()-1));
+		
+		//data object for this cluster key
+		clutserKey = toBigIntList(colNameComponents);
 	}
 	
 	/**
@@ -423,11 +490,12 @@ public class ObjectSerDes {
 	}
 	
 	/**
+	 * Recursively build ObjectNode graph
 	 * @param parent
 	 * @param path
 	 * @param value
 	 */
-	private void buildObject(ObjectNode parent, List<String> path, byte[] value) {
+	private void buildNestedObjectNode(ObjectNode parent, List<String> path, byte[] value) {
 		String pathElem = path.get(0);
 		if (path.size() == 1) {
 			ObjectNode child = new ObjectNode(pathElem, value);
@@ -436,7 +504,25 @@ public class ObjectSerDes {
 			ObjectNode child = new ObjectNode(pathElem);
 			parent.addChild(child);
 			path.remove(0);
-			buildObject(child,  path,  value);
+			buildNestedObjectNode(child,  path,  value);
+		}
+	}
+
+	/**
+	 * Recursively build ObjectNode graph
+	 * @param parent
+	 * @param path
+	 * @param value
+	 */
+	private void buildNestedMap(Map<String, Object> parent, List<String> path, byte[] value) {
+		String pathElem = path.get(0);
+		if (path.size() == 1) {
+			parent.put(pathElem, value);
+		} else {
+			Map<String, Object> child = new HashMap<String, Object>();
+			parent.put(pathElem, child);
+			path.remove(0);
+			buildNestedMap(child,  path,  value);
 		}
 	}
 	

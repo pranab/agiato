@@ -34,6 +34,16 @@ import org.apache.commons.beanutils.DynaClass;
 public class SimpleDynaBean  implements DynaBean {
 	private Map<String, Object> map = new HashMap<String, Object>();
 
+	public SimpleDynaBean() {
+	}
+	
+	/**
+	 * @param map
+	 */
+	public SimpleDynaBean(Map<String, Object> map) {
+		this.map = map;
+	}
+
 	/* (non-Javadoc)
 	 * @see org.apache.commons.beanutils.DynaBean#contains(java.lang.String, java.lang.String)
 	 */
@@ -123,4 +133,5 @@ public class SimpleDynaBean  implements DynaBean {
 		return map;
 	}
 
+	
 }
