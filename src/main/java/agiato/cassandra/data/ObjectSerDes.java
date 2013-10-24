@@ -516,13 +516,17 @@ public class ObjectSerDes {
 	 */
 	private void buildNestedMap(Map<String, Object> parent, List<String> path, byte[] value, int pathIndex) {
 		String pathElem = path.get(pathIndex);
+		boolean done =false;
+		Object child = null;
 		if (pathIndex == path.size() - 1) {
 			//end of path
 			parent.put(pathElem, value);
+			done = true;
 		} else {
-			Object child = parent.get(pathElem);
+			child = parent.get(pathElem);
 			String nextPathElem = path.get(pathIndex+1);
 			if(nextPathElem.startsWith("[")) {
+				//list child
 				List<Object> listChild = null;
 				if (null == child) {
 					//list child does not exist
@@ -530,25 +534,54 @@ public class ObjectSerDes {
 					parent.put(pathElem, listChild);
 				} else {
 					//list child exists
-					listChild = (List<Object>)parent.get(pathElem);
+					listChild = (List<Object>)child;
 				}
 				
 				//insert list element
 				int listIndex = Integer.parseInt(nextPathElem.substring(1, nextPathElem.length()-1));
-				child = new HashMap<String, Object>();
-				listChild.add(listIndex, child);
-				
-				pathIndex += 2;
+				if(pathIndex == path.size() - 2) {
+					//atomic value
+					listChild.add(listIndex, value);
+					done = true;
+				} else {
+					child = new HashMap<String, Object>();
+					listChild.add(listIndex, child);
+					pathIndex += 2;
+				}
 			} if(nextPathElem.startsWith("{")) {
+				//map child
+				Map<String, Object> mapChild = null;
+				if (null == child) {
+					//list child does not exist
+					mapChild = new HashMap<String,Object>();
+					parent.put(pathElem, mapChild);
+				} else {
+					//list child exists
+					mapChild = (Map<String,Object>)child;
+				}
 				
+				//insert list element
+				String mapKey = nextPathElem.substring(1, nextPathElem.length()-1);
+				if(pathIndex == path.size() - 2) {
+					//atomic value
+					mapChild.put(mapKey, value);
+					done = true;
+				} else {
+					child = new HashMap<String, Object>();
+					mapChild.put(mapKey, child);
+					pathIndex += 2;
+				}
 			} else {
+				//other object
 				if (null == child) {
 					child = new HashMap<String, Object>();
 					parent.put(pathElem, child);
 				}
 				++pathIndex;
 			}
-			
+		}
+		
+		if (!done) {
 			//recursive call
 			buildNestedMap((Map<String, Object>)child,  path,  value, pathIndex);
 		}
