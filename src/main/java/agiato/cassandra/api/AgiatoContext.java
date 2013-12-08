@@ -21,6 +21,7 @@ import agiato.cassandra.data.DataAccess;
 import agiato.cassandra.data.DataManager;
 
 /**
+ * Entry point to API, proving factory methods for reader and writer
  * @author pranab
  *
  */
@@ -35,12 +36,23 @@ public class AgiatoContext {
 	}
 	
 	/**
+	 * create column family writer
 	 * @param colFamilly
 	 * @return
 	 */
 	public static ColumnFamilyWriter createWriter(String colFamilly) {
 		DataAccess datAcc =  new DataAccess(colFamilly);
 		return (ColumnFamilyWriter)datAcc;
+	}
+	
+	/**
+	 * create column family reader
+	 * @param colFamilly
+	 * @return
+	 */
+	public static ColumnFamilyReader  createReader(String colFamilly) {
+		DataAccess datAcc =  new DataAccess(colFamilly);
+		return (ColumnFamilyReader)datAcc;
 	}
 	
 }

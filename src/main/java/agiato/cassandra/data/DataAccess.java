@@ -17,6 +17,7 @@
 
 package agiato.cassandra.data;
 
+import agiato.cassandra.api.ColumnFamilyReader;
 import agiato.cassandra.api.ColumnFamilyWriter;
 import agiato.cassandra.connect.Connector;
 
@@ -46,7 +47,7 @@ import org.apache.commons.pool.impl.GenericObjectPool;
  * Data  read write accessor
  * @author pranab
  */
-public class DataAccess  implements ColumnFamilyWriter {
+public class DataAccess  implements ColumnFamilyReader, ColumnFamilyWriter {
     private String colFamilly;
     private DataManager dataManager  = DataManager.instance();
 
@@ -188,6 +189,36 @@ public class DataAccess  implements ColumnFamilyWriter {
     }
 
     /**
+     * @param rowKey
+     * @param superCol
+     * @param cols
+     * @param limit
+     * @param consLevel
+     * @return
+     * @throws Exception
+     */
+    public  List<ColumnValue>  retrieveColumnSlice(long rowKey,   List<ByteBuffer> cols,  int limit, 
+    		ConsistencyLevel consLevel)
+            throws Exception {
+            return retrieveSubColumns(rowKey,  null, cols,  false, limit, consLevel);
+    }
+
+    /**
+     * @param rowKey
+     * @param superCol
+     * @param cols
+     * @param limit
+     * @param consLevel
+     * @return
+     * @throws Exception
+     */
+    public  List<ColumnValue>  retrieveColumnRange(long rowKey,   List<ByteBuffer> cols,  int limit, 
+    		ConsistencyLevel consLevel)
+            throws Exception {
+            return retrieveSubColumns(rowKey,  null, cols,  true, limit, consLevel);
+    }
+   
+    /**
      * Retirieves multiple columns from standard CF 
      * @param rowKey
      * @param superCol
@@ -202,6 +233,36 @@ public class DataAccess  implements ColumnFamilyWriter {
         List<ByteBuffer> cols, boolean isRange, int limit, ConsistencyLevel consLevel)
         throws Exception {
         return retrieveSubColumns(rowKey,  null, cols,  isRange, limit, consLevel);
+    }
+
+    /**
+     * @param rowKey
+     * @param superCol
+     * @param cols
+     * @param limit
+     * @param consLevel
+     * @return
+     * @throws Exception
+     */
+    public  List<ColumnValue>  retrieveColumnSlice(String  rowKey,   List<ByteBuffer> cols,  int limit, 
+    		ConsistencyLevel consLevel)
+            throws Exception {
+            return retrieveSubColumns(rowKey,  null, cols,  false, limit, consLevel);
+    }
+
+    /**
+     * @param rowKey
+     * @param superCol
+     * @param cols
+     * @param limit
+     * @param consLevel
+     * @return
+     * @throws Exception
+     */
+    public  List<ColumnValue>  retrieveColumnRange(String  rowKey,   List<ByteBuffer> cols,  int limit, 
+    		ConsistencyLevel consLevel)
+            throws Exception {
+            return retrieveSubColumns(rowKey,  null, cols,  true, limit, consLevel);
     }
 
     /**
@@ -221,6 +282,36 @@ public class DataAccess  implements ColumnFamilyWriter {
         return retrieveSubColumns(rowKey,  null, cols,  isRange, limit, consLevel);
     }
     
+    /**
+     * @param rowKey
+     * @param superCol
+     * @param cols
+     * @param limit
+     * @param consLevel
+     * @return
+     * @throws Exception
+     */
+    public  List<ColumnValue>  retrieveColumnSlice(ByteBuffer rowKey,   List<ByteBuffer> cols,  int limit, 
+    		ConsistencyLevel consLevel)
+            throws Exception {
+            return retrieveSubColumns(rowKey,  null, cols,  false, limit, consLevel);
+    }
+    
+    /**
+     * @param rowKey
+     * @param superCol
+     * @param cols
+     * @param limit
+     * @param consLevel
+     * @return
+     * @throws Exception
+     */
+    public  List<ColumnValue>  retrieveColumnRange(ByteBuffer rowKey,   List<ByteBuffer> cols,  int limit, 
+    		ConsistencyLevel consLevel)
+            throws Exception {
+            return retrieveSubColumns(rowKey,  null, cols,  true, limit, consLevel);
+    }
+   
     /**
      * Retirieves multiple columns from super CF 
      * @param rowKey

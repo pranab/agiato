@@ -134,24 +134,32 @@ public class ObjectSerDes {
 		for (String key : node.keySet()) {
 			Object obj = node.get(key);
 			if (obj instanceof Map<?,?>) {
+				//map
 				addToRootPath(rootPath,  key,  realMap);
 				depthFirstTraverse((Map<String, Object>)obj, rootPath,  traversedPath, true);
 				rootPath.remove(rootPath.size() - 1);
 			} else if (obj instanceof SimpleDynaBean) { 
+				//dyna bean
 				addToRootPath(rootPath,  key,  realMap);
 				depthFirstTraverse(((SimpleDynaBean)obj).getMap(), rootPath,  traversedPath, false);
 				rootPath.remove(rootPath.size() - 1);
 			} else if (obj instanceof List<?>) {
+				//list
 				addToRootPath(rootPath,  key,  realMap);
 				List<?> listObj  = (List<?>)obj;
 				int i = 0;
+				
+				//traverse list elements
 				for (Object child : listObj) {
 					rootPath.add("[" + i + "]");
 					if (child instanceof Map<?,?>) {
+						//map
 						depthFirstTraverse((Map<String, Object>)child, rootPath,  traversedPath, true);
 					} else if (child  instanceof SimpleDynaBean) { 
+						//dyna bean
 						depthFirstTraverse(((SimpleDynaBean)child).getMap(), rootPath,  traversedPath, false);
 					} else {
+						//primitive
 						String name = getNamePrefixMap(rootPath);
 						NamedObject nObj = new NamedObject(name, obj );
 						traversedPath.add(nObj);
@@ -161,6 +169,7 @@ public class ObjectSerDes {
 				}
 				rootPath.remove(rootPath.size() - 1);
 			} else {
+				//primitive
 				String prefix = getNamePrefixMap(rootPath);
 				String modKey = realMap ? "{ " + key + "}" : key;
 				String name = prefix.length() == 0 ? modKey : prefix + modKey;
@@ -188,7 +197,6 @@ public class ObjectSerDes {
 	 * @return
 	 */
 	private String getNamePrefixMap(List<String> rootPath) {
-		boolean first = true;
 		String prefix = "";
 		for (String path  : rootPath) {
 				prefix = prefix + path + ".";
@@ -285,6 +293,7 @@ public class ObjectSerDes {
 	}
 	
 	/**
+	 * serializes all column values in traversed path
 	 * @throws IOException
 	 */
 	private void serializeColumnValues() throws IOException {
