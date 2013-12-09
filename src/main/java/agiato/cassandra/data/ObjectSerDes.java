@@ -455,7 +455,7 @@ public class ObjectSerDes {
 				
 				//populate col value
 				List<String> colKeyComponents =getKeyComponents(nonPrimKeyColName);
-				buildNestedMap(dataObj, colKeyComponents,  colVal.getValue().array(),0);
+				buildNestedMap(dataObj, colKeyComponents,  Util.getBytesFromByteBuffer(colVal.getValue()),0);
 			}
 			
 			if (proto instanceof SimpleDynaBean) {
@@ -475,10 +475,14 @@ public class ObjectSerDes {
 			}
 		}
 		
-		
 		return values;
 	}
 	
+	/**
+	 * decodes cluster key components and normal column  names
+	 * @param colVal
+	 * @throws IOException
+	 */
 	private void createClusterKey(ColumnValue colVal) throws IOException {
 		//cluster key
 		ByteBuffer colName = colVal.getName();
@@ -562,15 +566,15 @@ public class ObjectSerDes {
 				//map child
 				Map<String, Object> mapChild = null;
 				if (null == child) {
-					//list child does not exist
+					//map child does not exist
 					mapChild = new HashMap<String,Object>();
 					parent.put(pathElem, mapChild);
 				} else {
-					//list child exists
+					//map child exists
 					mapChild = (Map<String,Object>)child;
 				}
 				
-				//insert list element
+				//insert map element
 				String mapKey = nextPathElem.substring(1, nextPathElem.length()-1);
 				if(pathIndex == path.size() - 2) {
 					//atomic value
