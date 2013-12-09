@@ -99,6 +99,9 @@ public class PrimaryKey {
 			numPrimKeyComponentsFound = primKeyElementCount;
 		} else {
 			List<NamedObject> head = new ArrayList<NamedObject>(prmKeyElements.size());
+			for (int i = 0; i < prmKeyElements.size();  ++i) {
+				head.add(null);
+			}
 			List<NamedObject> tail = new ArrayList<NamedObject>();
 			
 			//separate primary key and non primary key fields

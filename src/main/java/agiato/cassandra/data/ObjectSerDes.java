@@ -401,14 +401,14 @@ public class ObjectSerDes {
 					for (int i =0; i < primKey.getRowKeyElementCount(); ++i) {
 						String rowKeyName = primKey.getPrmKeyElements().get(i);
 						List<String> rowKeyComponents =getKeyComponents(rowKeyName);
-						buildNestedObjectNode(dataObj, rowKeyComponents,  rowKeyByteArrList.get(i));
+						buildNestedObjectNode(dataObj, rowKeyComponents,  0, rowKeyByteArrList.get(i));
 					}
 					
 					//populate cluster key values
 					for (int i =  primKey.getRowKeyElementCount(), j = 0; i < primKey.getPrimKeyElementCount() ;++i, ++j) {
 						String clusterKeyName = primKey.getPrmKeyElements().get(i);
 						List<String> clusterKeyComponents =getKeyComponents(clusterKeyName);
-						buildNestedObjectNode(dataObj, clusterKeyComponents,  colNameComponents.get( j ));
+						buildNestedObjectNode(dataObj, clusterKeyComponents, 0,  colNameComponents.get( j ));
 					}
 					
 					//cache it
@@ -417,7 +417,7 @@ public class ObjectSerDes {
 				
 				//populate col value
 				List<String> colKeyComponents =getKeyComponents(nonPrimKeyColName);
-				buildNestedObjectNode(dataObj, colKeyComponents,  colVal.getValue().array());
+				buildNestedObjectNode(dataObj, colKeyComponents,  0, Util.getBytesFromByteBuffer(colVal.getValue()));
 			}
 			
 			//collect all the objects
@@ -482,12 +482,14 @@ public class ObjectSerDes {
 	private void createClusterKey(ColumnValue colVal) throws IOException {
 		//cluster key
 		ByteBuffer colName = colVal.getName();
-		colNameComponents = Util.dcodeComposite(colName.array());
+		colNameComponents = Util.dcodeComposite(Util.getBytesFromByteBuffer(colName));
 		nonPrimKeyColName = Util.getStringFromBytes(colNameComponents.remove(colNameComponents.size()-1));
+		//System.out.println("nonPrimKeyColName:" + nonPrimKeyColName);
 		
 		//data object for this cluster key
 		clutserKey = toBigIntList(colNameComponents);
 	}
+	
 	
 	/**
 	 * @param keyName
@@ -504,16 +506,15 @@ public class ObjectSerDes {
 	 * @param path
 	 * @param value
 	 */
-	private void buildNestedObjectNode(ObjectNode parent, List<String> path, byte[] value) {
-		String pathElem = path.get(0);
-		if (path.size() == 1) {
-			ObjectNode child = new ObjectNode(pathElem, value);
-			parent.addChild(child);
-		} else {
-			ObjectNode child = new ObjectNode(pathElem);
-			parent.addChild(child);
-			path.remove(0);
-			buildNestedObjectNode(child,  path,  value);
+	private void buildNestedObjectNode(ObjectNode parent, List<String> path, int index, byte[] value) {
+		String pathElem = path.get(index);
+		ObjectNode child = index == path.size() - 1 ? new ObjectNode(pathElem, value) : new ObjectNode(pathElem);
+		parent.addChild(child);
+
+		if (index < path.size() - 1) {
+			//recurse
+			++index;
+			buildNestedObjectNode(child,  path, index,  value);
 		}
 	}
 

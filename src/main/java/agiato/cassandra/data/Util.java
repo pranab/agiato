@@ -444,6 +444,17 @@ public class Util {
         return ByteBuffer.wrap(getBytesFromObject(obj));
     }
     
+	/**
+	 * @param byteBuffer
+	 * @return
+	 */
+	public static byte[] getBytesFromByteBuffer(ByteBuffer byteBuffer) {
+		byte[] bytes = new byte[byteBuffer.remaining()];
+		byteBuffer.get(bytes, 0, byteBuffer.remaining());
+		return bytes;
+	}
+   
+    
     /**
      * makes composite column name or row key
      * @param bytesList
@@ -477,25 +488,37 @@ public class Util {
      * desrializes encoded composite key
      * @param encBytes
      * @return
+     * @throws IOException 
      */
-    public static  List<byte[]>  dcodeComposite(byte[] encBytes) {
+    public static  List<byte[]>  dcodeComposite(byte[] encBytes) throws IOException {
     	List<byte[]> bytesList = new ArrayList<byte[]>();
     	int cur = 0;
     	int elemLen = 0;
     	byte[] elemBytes = null;
-    	while (cur  < encBytes.length) {
-    		//length
-    		elemLen = ( encBytes[cur++] & 0xFF) << 8;
-    		elemLen = elemLen | (encBytes[cur++] & 0xFF);
+   		//System.out.println("encBytes length:" + encBytes.length);
+    	
+   		int sentinel = 0;
+   		int actualLen;
+    	ByteArrayInputStream bis = new ByteArrayInputStream(encBytes);
+    	while (true) {
+    		elemLen = bis.read() << 8;
+    		elemLen = elemLen | bis.read();
     		elemBytes = new byte[elemLen];
+    		//System.out.println("next elemLen:" + elemLen);
     		
-    		//copy element
-    		System.arraycopy(encBytes, cur,  elemBytes,  0, elemLen);
+    		actualLen = bis.read(elemBytes, 0, elemLen);
+    		if (actualLen < elemLen ) {
+    			throw new IllegalArgumentException("can not decode composite");
+    		}
     		bytesList.add(elemBytes);
+    		sentinel = bis.read();
     		
-    		//reposition
-    		cur += elemLen + 1;
+    		if (bis.available() == 0) {
+    			break;
+    		}
     	}
+    	
+    	bis.close();
     	return bytesList;
     }
     
