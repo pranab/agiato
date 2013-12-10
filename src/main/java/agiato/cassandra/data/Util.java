@@ -454,6 +454,25 @@ public class Util {
 		return bytes;
 	}
    
+	/**
+	 * @param value
+	 * @param protoValue
+	 * @return
+	 * @throws IOException
+	 */
+	public static Object getObjectFromBytes(byte[] value, Object protoValue) throws IOException {
+		Object typedVal = null;
+		if (protoValue instanceof Integer) {
+			typedVal = getIntFromBytes(value);
+		} else if (protoValue instanceof Long) {
+			typedVal = getLongFromBytes(value);
+		} else if (protoValue instanceof Double) {
+			typedVal = getDoubleFromBytes(value);
+		} else if (protoValue instanceof String) {
+			typedVal = getStringFromBytes(value);
+		} 
+		return typedVal;
+	}
     
     /**
      * makes composite column name or row key
