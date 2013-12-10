@@ -550,9 +550,10 @@ public class ObjectSerDes {
 	 * @param parent
 	 * @param path
 	 * @param value
+	 * @throws IOException 
 	 */
 	private void buildNestedMap(Map<String, Object> parent, List<String> path, byte[] value, int pathIndex, 
-		Object protoValue) {
+		Object protoValue) throws IOException {
 		String pathElem = path.get(pathIndex);
 		boolean done =false;
 		Object child = null;
@@ -622,7 +623,7 @@ public class ObjectSerDes {
 		
 		if (!done) {
 			//recursive call
-			buildNestedMap((Map<String, Object>)child,  path,  value, pathIndex);
+			buildNestedMap((Map<String, Object>)child,  path,  value, pathIndex,protoValue);
 		}
 	}
 	
