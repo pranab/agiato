@@ -52,6 +52,7 @@ public class ObjectSerDes {
 	private String   nonPrimKeyColName;
 	private List<BigInteger>  clutserKey;
 	private Map<String, Object> nodeValueMap = new  HashMap<String, Object>();
+	private boolean rawNodeValue ;
 	
 	/*
 	 * @param primKey
@@ -391,6 +392,7 @@ public class ObjectSerDes {
 	public List<Object> construct(Object proto, List<ColumnValue> colValues) throws IOException {
 		List<Object> values = new ArrayList<Object>();
 		Object protoValue = null;
+		rawNodeValue = false;
 		if (proto instanceof ObjectNode)  {
 			//ObjectNode
 			for (ColumnValue colVal :  colValues) {
@@ -480,9 +482,15 @@ public class ObjectSerDes {
 				//collect all the JSON string objects
 				for (List<BigInteger> primKey : dataObjects.keySet()) {
 					Map<String, Object> map = (Map<String, Object>)dataObjects.get(primKey);
-					ObjectMapper mapper = new ObjectMapper();
-					String json = mapper.writeValueAsString(map);
-					values.add(json);
+					if (rawNodeValue) {
+						//return map, some node values untyped
+						values.add(map);
+					} else {
+						//all node values strongly typed
+						ObjectMapper mapper = new ObjectMapper();
+						String json = mapper.writeValueAsString(map);
+						values.add(json);
+					}
 				}
 			}
 		}
@@ -526,6 +534,9 @@ public class ObjectSerDes {
 	 */
 	private void buildNestedObjectNode(ObjectNode parent, List<String> path, int index, byte[] value, Object protoValue) 
 		throws IOException {
+		if (null == protoValue) {
+			rawNodeValue = true;
+		}
 		String pathElem = path.get(index);
 		ObjectNode child = null;
 		if (index == path.size() - 1) {
@@ -554,6 +565,9 @@ public class ObjectSerDes {
 	 */
 	private void buildNestedMap(Map<String, Object> parent, List<String> path, byte[] value, int pathIndex, 
 		Object protoValue) throws IOException {
+		if (null == protoValue) {
+			rawNodeValue = true;
+		}
 		String pathElem = path.get(pathIndex);
 		boolean done =false;
 		Object child = null;
