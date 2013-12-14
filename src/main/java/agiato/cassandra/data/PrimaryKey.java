@@ -31,6 +31,7 @@ public class PrimaryKey {
 	private int primKeyElementCount;
 	private int rowKeyElementCount = 1;
 	private int numPrimKeyComponentsFound;
+	private int numPrimKeyComponentsSet;
 	
 	/**
 	 * @param prmKeyElements
@@ -41,7 +42,7 @@ public class PrimaryKey {
 	}
 	
 	/**
-	 * @param prmKeyElements
+	 * @param prmKeyElementsnumPrimKeyComponentsFound
 	 * @param rowKeyElementCount
 	 */
 	public PrimaryKey(List<String> prmKeyElements, int rowKeyElementCount) {
@@ -60,6 +61,24 @@ public class PrimaryKey {
 		this.rowKeyElementCount = rowKeyElementCount;
 	}
 	
+	/**
+	 * @param numPrimKeyComponentsSet
+	 * @return
+	 */
+	public PrimaryKey withNumPrimKeyComponentsSet(int numPrimKeyComponentsSet) {
+		this.numPrimKeyComponentsSet = numPrimKeyComponentsSet;
+		return this;
+	}
+	
+	/**
+	 * @param rowKeyElementCount
+	 * @return
+	 */
+	public PrimaryKey withRowKeyElementCount(int rowKeyElementCount) {
+		this.rowKeyElementCount = rowKeyElementCount;
+		return this;
+	}
+
 	/**
 	 * @return
 	 */
@@ -81,8 +100,38 @@ public class PrimaryKey {
 		return rowKeyElementCount;
 	}
 
+	/**
+	 * @return
+	 */
+	public int getNumPrimKeyComponentsSet() {
+		return numPrimKeyComponentsSet;
+	}
+
+	/**
+	 * @param rowKeyElementCount
+	 */
 	public void setRowKeyElementCount(int rowKeyElementCount) {
 		this.rowKeyElementCount = rowKeyElementCount;
+	}
+	
+	/**
+	 * @return
+	 */
+	public boolean isOnlyRowKeySet() {
+		return numPrimKeyComponentsSet == rowKeyElementCount;
+	}
+
+	/**
+	 * @return
+	 */
+	public boolean isFullySet() {
+		boolean fullySet = true;
+		if (primKeyElementCount > 0) {
+			fullySet= numPrimKeyComponentsSet == primKeyElementCount;
+		} else {
+			fullySet= numPrimKeyComponentsSet == prmKeyElements.size();
+		}
+		return fullySet;
 	}
 
 	/**

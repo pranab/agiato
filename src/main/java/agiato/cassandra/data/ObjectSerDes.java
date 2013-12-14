@@ -39,6 +39,10 @@ import org.codehaus.jackson.type.TypeReference;
  * @author pranab
  *
  */
+/**
+ * @author pranab
+ *
+ */
 public class ObjectSerDes {
 	private PrimaryKey primKey;
 	private List<NamedObject> traversedPath;
@@ -270,19 +274,29 @@ public class ObjectSerDes {
 
 		//cluster key
 		List<byte[]> byteArrList = new ArrayList<byte[]>();
-		for (int i = primKey.getRowKeyElementCount(); i < primKey.getNumPrimKeyComponentsFound(); ++i) {
+		for (int i = primKey.getRowKeyElementCount(); i < primKey.getNumPrimKeyComponentsSet(); ++i) {
 			byteArrList.add((byte[])traversedPath.get(i).getValue());
 		}
-		clusterKey = ByteBuffer.wrap(Util.encodeComposite(byteArrList));
+		clusterKey = byteArrList.isEmpty() ? null  :   ByteBuffer.wrap(Util.encodeComposite(byteArrList));
 	}
 
+	/**
+	 * @return true if cluster key set
+	 */
+	public boolean isClusterKeySet() {
+		return null != clusterKey;
+	}
+	
 	/**
 	 * return column key range corresponding to cluster key
 	 * @return
 	 */
-	public List<ByteBuffer> getColumnRange() {
-		List<ByteBuffer> colRange = new ArrayList<ByteBuffer>();
+	public List<ByteBuffer> getColumnRange()  {
+		if (null == clusterKey) {
+			throw new IllegalStateException("cluster key not set");
+		}
 		
+		List<ByteBuffer> colRange = new ArrayList<ByteBuffer>();
 		byte[] startBytes  = new byte[clusterKey.remaining()];
 		clusterKey.get(startBytes);
 		byte[] endBytes = Arrays.copyOf(startBytes, startBytes.length);

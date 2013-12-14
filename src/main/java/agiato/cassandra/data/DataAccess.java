@@ -400,7 +400,7 @@ public class DataAccess  implements ColumnFamilyReader, ColumnFamilyWriter {
 
         return colVals;
     }
-    
+
     /**
      * Retirieves super column from super CF 
      * @param rowKey
@@ -729,23 +729,34 @@ public class DataAccess  implements ColumnFamilyReader, ColumnFamilyWriter {
      */
     public  List<ColumnValue>  retrieveColumns(String rowKey, ConsistencyLevel consLevel)
         throws Exception {
-        Connector connector = dataManager.borrowConnection();
-        Cassandra.Client client = connector.openConnection();
-        List<ColumnValue> colValues = null;
-        
-        try{
-        SlicePredicate slicePredicate = slicePredicateWithAllCol();
-
-        ColumnParent colPar = new ColumnParent(colFamilly);
-        List<ColumnOrSuperColumn> colSuperCols =  client.get_slice(Util.getByteBufferFromString(rowKey), colPar, slicePredicate, consLevel);
-        
-        colValues = getColumns(colSuperCols);
-        } finally {
-            dataManager.returnConnection(connector);
-        }
-        return colValues;
+    	return retrieveColumns(Util.getByteBufferFromString(rowKey),  consLevel);
      }
 
+    /**
+     * @param rowKey
+     * @param consLevel
+     * @return
+     * @throws Exception
+     */
+    public  List<ColumnValue>  retrieveColumns(ByteBuffer  rowKey, ConsistencyLevel consLevel)
+            throws Exception {
+            Connector connector = dataManager.borrowConnection();
+            Cassandra.Client client = connector.openConnection();
+            List<ColumnValue> colValues = null;
+            
+            try{
+            SlicePredicate slicePredicate = slicePredicateWithAllCol();
+
+            ColumnParent colPar = new ColumnParent(colFamilly);
+            List<ColumnOrSuperColumn> colSuperCols =  client.get_slice(rowKey, colPar, slicePredicate, consLevel);
+            
+            colValues = getColumns(colSuperCols);
+            } finally {
+                dataManager.returnConnection(connector);
+            }
+            return colValues;
+         }
+    
     /**
      * Queries all rows from standard CF using native index
      * @param column
@@ -973,7 +984,12 @@ public class DataAccess  implements ColumnFamilyReader, ColumnFamilyWriter {
     	serDes.deconstruct(obj);
     	serDes.serializePrimKey();
     	
-    	 List<ColumnValue> colValues = retrieveSubColumns(serDes.getRowKey(),  null,  serDes.getColumnRange(), true, -1,  consLevel);	
+    	List<ColumnValue> colValues = null;
+    	if (primKey.isOnlyRowKeySet()) {
+    		colValues = retrieveColumns(serDes.getRowKey(), consLevel);
+    	}  else {
+    		colValues = retrieveSubColumns(serDes.getRowKey(),  null,  serDes.getColumnRange(), true, -1,  consLevel);	
+    	}
     	 List<Object> retrieved = serDes.construct(obj, colValues);
     	 return retrieved;
     }
