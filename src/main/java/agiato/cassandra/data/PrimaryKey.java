@@ -39,6 +39,7 @@ public class PrimaryKey {
 	public PrimaryKey(String... prmKeyElements ) {
 		//primary keys could be anywhere in the traversed tree with only one row key component
 		this.prmKeyElements = Arrays.asList(prmKeyElements);
+		numPrimKeyComponentsSet = prmKeyElements.length;
 	}
 	
 	/**
@@ -49,6 +50,7 @@ public class PrimaryKey {
 		//primary keys could be anywhere in the traversed tree
 		this.prmKeyElements = prmKeyElements;
 		this.rowKeyElementCount = rowKeyElementCount;
+		numPrimKeyComponentsSet = prmKeyElements.size();
 	}
 	
 	/**
@@ -59,6 +61,7 @@ public class PrimaryKey {
 		//primary keys in the head of the traversed tree
 		this.primKeyElementCount = primKeyElementCount;
 		this.rowKeyElementCount = rowKeyElementCount;
+		numPrimKeyComponentsSet = primKeyElementCount;
 	}
 	
 	/**
