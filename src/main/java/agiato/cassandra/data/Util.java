@@ -484,25 +484,36 @@ public class Util {
     	if (bytesList.size() == 1) {
     		encBytes = bytesList.get(0);
     	} else  {
-	        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-	        for (byte[] bytes : bytesList){
-	        	//length
-	        	bos.write( (byte) ((bytes.length >> 8 ) & 0xFF)) ;
-	        	bos.write( (byte) (bytes.length & 0xFF)) ;
-	          
-	        	//content
-	        	for (int j=0;j<bytes.length;j++){
-	        		bos.write( bytes[j] & 0xFF) ;
-	        	}
-	        	
-	        	//sentinel
-	        	bos.write((byte)0);
-	        }
-	        encBytes =  bos.toByteArray();
+    		encBytes = encodeCompositeAlways( bytesList);
     	}
     	return encBytes;
       }   
 
+    /**
+     * makes composite column name or row key
+     * @param bytesList
+     * @return
+     */
+    public static  byte[] encodeCompositeAlways(List<byte[]> bytesList){
+    	byte[] encBytes;
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        for (byte[] bytes : bytesList){
+        	//length
+        	bos.write( (byte) ((bytes.length >> 8 ) & 0xFF)) ;
+        	bos.write( (byte) (bytes.length & 0xFF)) ;
+          
+        	//content
+        	for (int j=0;j<bytes.length;j++){
+        		bos.write( bytes[j] & 0xFF) ;
+        	}
+        	
+        	//sentinel
+        	bos.write((byte)0);
+        }
+        encBytes =  bos.toByteArray();
+    	return encBytes;
+      }   
+    
     /**
      * desrializes encoded composite key
      * @param encBytes

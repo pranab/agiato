@@ -277,7 +277,9 @@ public class ObjectSerDes {
 		for (int i = primKey.getRowKeyElementCount(); i < primKey.getNumPrimKeyComponentsSet(); ++i) {
 			byteArrList.add((byte[])traversedPath.get(i).getValue());
 		}
-		clusterKey = byteArrList.isEmpty() ? null  :   ByteBuffer.wrap(Util.encodeComposite(byteArrList));
+		
+		//System.out.println("num cluster key ements:" +byteArrList.size() );
+		clusterKey = byteArrList.isEmpty() ? null  :   ByteBuffer.wrap(Util.encodeCompositeAlways(byteArrList));
 	}
 
 	/**
