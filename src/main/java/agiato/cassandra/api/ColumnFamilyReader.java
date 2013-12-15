@@ -32,6 +32,45 @@ import agiato.cassandra.data.PrimaryKey;
  */
 public interface  ColumnFamilyReader {
 
+	   /**
+     * Retirieves all columns from standard CF 
+     * @param rowKey
+     * @param consLevel
+     * @return
+     * @throws Exception
+     */
+    public  List<ColumnValue>  retrieveColumns(String rowKey, ConsistencyLevel consLevel)
+        throws Exception;
+  
+    /**
+     * Retirieves all columns from standard CF 
+     * @param rowKey
+     * @param consLevel
+     * @return
+     * @throws Exception
+     */
+    public  List<ColumnValue>  retrieveColumns(long rowKey, ConsistencyLevel consLevel)
+        throws Exception;
+    
+    /**
+     * Retirieves all columns from standard CF 
+     * @param rowKey
+     * @param consLevel
+     * @return
+     * @throws Exception
+     */
+    public  List<ColumnValue>  retrieveColumns(double rowKey, ConsistencyLevel consLevel)
+        throws Exception;
+    
+    /**
+     * @param rowKey
+     * @param consLevel
+     * @return
+     * @throws Exception
+     */
+    public  List<ColumnValue>  retrieveColumns(ByteBuffer  rowKey, ConsistencyLevel consLevel)
+            throws Exception;
+    
 	/**
      * Retirieves a column from stanadard CF 
      * @param rowKey

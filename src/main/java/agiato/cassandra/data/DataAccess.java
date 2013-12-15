@@ -733,6 +733,30 @@ public class DataAccess  implements ColumnFamilyReader, ColumnFamilyWriter {
      }
 
     /**
+     * Retirieves all columns from standard CF 
+     * @param rowKey
+     * @param consLevel
+     * @return
+     * @throws Exception
+     */
+    public  List<ColumnValue>  retrieveColumns(long rowKey, ConsistencyLevel consLevel)
+        throws Exception {
+    	return retrieveColumns(Util.getByteBufferFromLong(rowKey),  consLevel);
+     }
+
+    /**
+     * Retirieves all columns from standard CF 
+     * @param rowKey
+     * @param consLevel
+     * @return
+     * @throws Exception
+     */
+    public  List<ColumnValue>  retrieveColumns(double rowKey, ConsistencyLevel consLevel)
+        throws Exception {
+    	return retrieveColumns(Util.getByteBufferFromDouble(rowKey),  consLevel);
+     }
+
+    /**
      * @param rowKey
      * @param consLevel
      * @return
