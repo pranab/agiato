@@ -54,6 +54,19 @@ public class RangeReader {
 	private boolean atRowEnd;
 	private static ByteBuffer endMarker;
 	
+	/**
+	 * @param colFam col family name
+	 * @param rowKey row key which is Long, String or ByteBuffer (if row key is a composite) 
+	 * @param batchSize desired number of columns
+	 * @param batchSizeTolerance batch size tolerance as a percentage of batch size (e.g. 10)
+	 * @param maxFetchSize max number of columns to fetch 
+	 * @param startCol start col value
+	 * @param initialRangeSize initial number of columns to fetch
+	 * @param consLevel consistency level
+	 * @param superCol super column name, null if there is no super column
+	 * @param colType column name data type
+	 * @throws IOException
+	 */
 	public RangeReader(String colFam, Object rowKey, int batchSize, int batchSizeTolerance, int  maxFetchSize, Object startCol, 
 		int initialRangeSize,  ConsistencyLevel consLevel, Object  superCol, ColumnType colType) throws IOException {
 		this.dataAccess = new DataAccess(colFam);
@@ -77,6 +90,11 @@ public class RangeReader {
 		}
 	}
 	
+	/**
+	 * reads columns
+	 * @return
+	 * @throws Exception
+	 */
 	public List<ColumnValue> getColumnValues() throws Exception {
 		if (!atRowEnd) {
 		    //set column range
@@ -98,6 +116,12 @@ public class RangeReader {
 		return colValues;
 	}
 	
+	/**
+	 * @param obj object to be serialized
+	 * @param acceptTyped true if only primitive typed object accepted
+	 * @return
+	 * @throws IOException
+	 */
 	private ByteBuffer getByteBuffer(Object obj, boolean acceptTyped) throws IOException {
 		ByteBuffer bytBuf = null;
 		if (obj instanceof Long){
@@ -112,6 +136,10 @@ public class RangeReader {
 		return bytBuf;
 	}
 	
+	/**
+	 * sets end column
+	 * @throws IOException
+	 */
 	private void setEndCol() throws IOException {
 		if (colType == ColumnType.COL_LONG) {
 			if (lastFetchCount >= 0) {
@@ -129,6 +157,10 @@ public class RangeReader {
 		}
 	}
 	
+	/**
+	 * sets start column
+	 * @throws IOException
+	 */
 	private void setStartCol() throws IOException {
 		if (lastFetchCount > 0) {
 			ColumnValue colVal = colValues.get(colValues.size()-1);
@@ -144,22 +176,39 @@ public class RangeReader {
 		}
 	}
 
+	/**
+	 * @param rowKey
+	 */
 	public void setRowKey(ByteBuffer rowKey) {
 		this.rowKey = rowKey;
 	}
 	
+	/**
+	 * @param startCol
+	 * @throws IOException
+	 */
 	public void setStartCol(Object startCol) throws IOException {
 		this.startCol = getByteBuffer(startCol, true);
 	}
 	
+	/**
+	 * @param initialRangeSize
+	 */
 	public void setInitialRangeSize(int initialRangeSize) {
 		curRangeSize = initialRangeSize;
 	}
 	
+	/**
+	 * @param superCol
+	 * @throws IOException
+	 */
 	public void setSuperCol(Object  superCol) throws IOException{
 		this.superCol= getByteBuffer(superCol, false);
 	}
 
+	/**
+	 * @return
+	 */
 	public boolean isAtRowEnd() {
 		return atRowEnd;
 	}
