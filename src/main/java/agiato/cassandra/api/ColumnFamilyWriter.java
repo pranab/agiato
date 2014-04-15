@@ -21,12 +21,14 @@ import java.util.List;
 
 import org.apache.cassandra.thrift.ConsistencyLevel;
 
+import agiato.cassandra.data.ColumnValue;
 import agiato.cassandra.data.PrimaryKey;
 import agiato.cassandra.data.SimpleRow;
 
 public interface ColumnFamilyWriter {
 
     /**
+     * Low level write
      * @param row
      * @param consLevel
      * @throws Exception
@@ -34,6 +36,7 @@ public interface ColumnFamilyWriter {
     public void writeRow(SimpleRow row, ConsistencyLevel consLevel) throws Exception;
     
     /**
+     * Low level write of multiple row
      * @param rows
      * @param consLevel
      * @throws Exception
@@ -41,6 +44,16 @@ public interface ColumnFamilyWriter {
     public void writeRows(List<SimpleRow> rows, ConsistencyLevel consLevel) throws Exception;
     
     /**
+     * Write row with composite row and cluster key
+     * @param row
+     * @param consLevel
+     * @throws Exception
+     */
+    public void writeRow(List<Object> rowKey, List<Object> clusterKey,  List<ColumnValue> columns,
+    		ConsistencyLevel consLevel) throws Exception;
+   
+    /**
+     * Write object modeled with composite row and cluster key
      * @param obj
      * @param primKey
      * @param consLevel
@@ -49,6 +62,7 @@ public interface ColumnFamilyWriter {
     public   void  writeObject(Object obj, PrimaryKey primKey, ConsistencyLevel consLevel) throws Exception;
     
     /**
+     * Write objects modeled with composite row and cluster key
      * @param objs
      * @param primKey
      * @param consLevel

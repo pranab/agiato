@@ -961,6 +961,43 @@ public class DataAccess  implements ColumnFamilyReader, ColumnFamilyWriter {
     }
 
     /**
+     * @param row
+     * @param consLevel
+     * @throws Exception
+     */
+    public void writeRow(List<Object> rowKey, List<Object> clusterKey,  List<ColumnValue> columns,
+    		ConsistencyLevel consLevel) throws Exception {
+    	//serialize composite row key
+    	List<byte[]> compRowKeyItemList = new ArrayList<byte[]>();
+    	for (Object rowKeyItem : rowKey) {
+    		compRowKeyItemList.add(Util.getBytesFromObject(rowKeyItem));
+    	}
+    	byte[] encodedRowKey = Util.encodeComposite(compRowKeyItemList);
+    	ByteBuffer rowKeyComp = ByteBuffer.wrap(encodedRowKey);
+    	
+    	//serialize cluster key
+    	List<byte[]> compClustKeyItemList = new ArrayList<byte[]>();
+    	for (Object clustKeyItem : clusterKey) {
+    		compClustKeyItemList.add(Util.getBytesFromObject(clustKeyItem));
+    	}
+    	
+    	//composite columns
+    	List<ColumnValue> compColumns = new ArrayList<ColumnValue>(); 
+    	for (ColumnValue colVal : columns) {
+    		byte[] colName = Util.getBytesFromByteBuffer(colVal.getName());
+    		compClustKeyItemList.add(colName);
+        	byte[] encodedColKey = Util.encodeComposite(compClustKeyItemList);
+        	ByteBuffer colKeyComp = ByteBuffer.wrap(encodedColKey);
+        	ColumnValue compColVal = new ColumnValue();
+        	compColVal.write(colKeyComp, colVal.getValue());
+        	compColumns.add(compColVal);
+        	compClustKeyItemList.remove(compClustKeyItemList.size() - 1);
+    	}
+    	
+    	updateColumns(rowKeyComp,  compColumns,  consLevel);
+    }
+
+    /**
      * @param rows
      * @param consLevel
      * @throws Exception

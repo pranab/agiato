@@ -1,0 +1,32 @@
+{
+    "cluster" :
+	{
+		"hosts" :
+		[
+			{
+				"name" : "localhost",
+				"port" : 9160
+			}
+		],
+		"loadBalancerClass" : "agiato.cassandra.connect.RoundRobinLoadBalancer",
+		"poolConfig" : 
+		{
+			"maxActive" : 8,
+			"maxIdle" : 8
+		}
+	},
+	"keySpace" :
+	{
+		"name" : "test",
+		"replicaPlacementStrategy" : "org.apache.cassandra.locator.SimpleStrategy",
+		"replicationFactor" : 1,
+		"endPointSnitch" : "org.apache.cassandra.locator.EndPointSnitch",
+		"columnFamilies" : 
+		[
+			{
+				"name" : "orders"
+			}
+		]
+	}
+}
+

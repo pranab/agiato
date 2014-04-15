@@ -69,6 +69,26 @@ public class ColumnValue  extends BaseColumnValue{
     }
 
     /**
+     * @param name
+     * @param value
+     * @throws IOException
+     */
+    public void write(String name, Object value) throws IOException{
+        this.name = Util.getByteBufferFromString(name) ;
+        this.value = Util.getByteBufferFromObject(value);
+    }
+
+    /**
+     * @param name
+     * @param value
+     * @throws IOException
+     */
+    public void write(ByteBuffer name, ByteBuffer value) throws IOException{
+        this.name = name ;
+        this.value = value;
+    }
+
+    /**
      * @return
      * @throws IOException
      */
